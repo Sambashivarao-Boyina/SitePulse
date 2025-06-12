@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
 import {
@@ -9,6 +8,10 @@ import {
   UserButton,
 } from "@clerk/clerk-react";
 import type { ReactNode } from "react";
+import HomePage from "./pages/Home";
+import {Routes,Route} from "react-router-dom"
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 interface ProtectedRouteProps {
   children: ReactNode;
 }
@@ -30,15 +33,12 @@ function App() {
   
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div>
-        <p>Hello world</p>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-      </div>
+      <NavBar/>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+       
+      </Routes>
+      <Footer/>
     </ThemeProvider>
   );
 }
