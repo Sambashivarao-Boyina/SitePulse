@@ -22,9 +22,10 @@ async function main() {
 }
 
 const userRouter = require("./routes/user");
+const websiteRouter = require("./routes/website");
 
-
-app.use("/user", userRouter);
+app.use("/api/user", userRouter);
+app.use("/api/website", websiteRouter);
 
 app.use((err, req, res, next) => {
   let { status = 500, message = "Internal ServerError" } = err;

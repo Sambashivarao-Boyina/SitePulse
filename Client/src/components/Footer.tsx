@@ -9,7 +9,7 @@ const Footer = () => {
             <Globe className="h-5 w-5 text-white" />
           </div>
           <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            WebTracker
+            SitePulse
           </span>
         </div>
         <div className="text-sm text-muted-foreground">

@@ -1,16 +1,10 @@
-import React, { useState } from "react";
 import {
-  Menu,
-  Globe,
   BarChart3,
   Plus,
-  Eye,
-  BookOpen,
   TrendingUp,
   Shield,
   Zap,
   Users,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +16,7 @@ import {
 } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
   
@@ -61,11 +56,8 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-     
 
-      {/* Hero Section */}
+    <>
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-background dark:from-blue-950/20 dark:via-purple-950/20 dark:to-background">
         <div className="container px-4 py-20 lg:py-32">
           <div className="mx-auto max-w-4xl text-center">
@@ -101,7 +93,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      
       <section className="border-y bg-muted/50 py-16">
         <div className="container px-4">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
@@ -119,7 +111,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-20">
         <div className="container px-4">
           <div className="mx-auto mb-16 max-w-2xl text-center">
@@ -177,19 +168,17 @@ const HomePage = () => {
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 asChild
               >
-                <a href="/add-website">
+                <Link to="/add-website">
                   <Plus className="mr-2 h-5 w-5" />
                   Add Your First Website
-                </a>
+                </Link>
               </Button>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      
-      
-    </div>
+    </>
   );
 };
 
