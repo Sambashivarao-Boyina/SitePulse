@@ -77,16 +77,16 @@ const HomePage = () => {
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 asChild
               >
-                <a href="/add-website">
+                <Link to="/add-website">
                   <Plus className="mr-2 h-5 w-5" />
                   Start Tracking Now
-                </a>
+                </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <a href="/dashboard">
+                <Link to="/dashboard">
                   <BarChart3 className="mr-2 h-5 w-5" />
-                  View Dashboard
-                </a>
+                  Add Page of You Website
+                </Link>
               </Button>
             </div>
           </div>

@@ -18,7 +18,6 @@ const NavBar = () => {
   const navItems = [
     { name: "Add Website", href: "/add-website", icon: Plus },
     { name: "Show Websites", href: "/websites", icon: Eye },
-    { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Docs", href: "/docs", icon: BookOpen },
   ];
   return (

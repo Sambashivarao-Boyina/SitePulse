@@ -96,17 +96,20 @@ const AddSite = () => {
     try {
       
       const token = await getToken();
-      const response = await axios.post("/api/website", {
-        name: newWebsite.name,
-        url: newWebsite.url,
-        logo: newWebsite.logo,
-        enableAlerts: newWebsite.enableAlerts
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.post(
+        "/api/website",
+        {
+          name: newWebsite.name,
+          url: new URL(newWebsite.url).hostname.replace(/^www\./, ""),
+          logo: newWebsite.logo,
+          enableAlerts: newWebsite.enableAlerts,
         },
-        
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.data;
 
@@ -123,7 +126,7 @@ const AddSite = () => {
     createNewWebsite(form.getValues());
   }
   return (
-    <div className="h-full w-full flex items-center justify-center">
+    <div className="h-[calc(100vh-4rem)] w-full flex flex-col items-center">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -192,9 +195,7 @@ const AddSite = () => {
             type="submit"
             disabled={isSubmitting}
           >
-            {
-              isSubmitting ? <Loader2Icon className="animate-spin" /> : "Add"
-            }
+            {isSubmitting ? <Loader2Icon className="animate-spin" /> : "Add"}
           </Button>
         </form>
       </Form>

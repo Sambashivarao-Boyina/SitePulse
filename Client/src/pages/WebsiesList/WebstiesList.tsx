@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Search,
   Plus,
@@ -17,7 +17,6 @@ import {
   Filter,
   Activity,
   AlertCircle,
-  TrendingUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -129,7 +128,7 @@ const WebsitesList = () => {
         </p>
         {!searchQuery && statusFilter === "all" && (
           <Link to="/add-website">
-            <Button>
+            <Button className="bg-violet-500 hover:bg-violet-600">
               <Plus className="w-4 h-4 mr-2" />
               Add Website
             </Button>
@@ -167,7 +166,7 @@ const WebsitesList = () => {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Link to="/add-website">
-                <Button size="sm" className="shrink-0">
+                <Button size="sm" className="shrink-0 bg-violet-600 hover:bg-violet-700 text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Add Website</span>
                   <span className="sm:hidden">Add</span>
@@ -179,6 +178,7 @@ const WebsitesList = () => {
           {/* Stats */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
             <Card>
+            
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -287,7 +287,7 @@ const WebsitesList = () => {
         ) : filteredWebsites.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4 ">
             {filteredWebsites.map((website) => (
               <WebsiteCard
                 key={website._id}

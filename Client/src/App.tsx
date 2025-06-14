@@ -1,36 +1,31 @@
 import { ThemeProvider } from "./components/theme-provider";
-import {
-  RedirectToSignIn,
-  useAuth,
-} from "@clerk/clerk-react";
+import { RedirectToSignIn, useAuth } from "@clerk/clerk-react";
 import type { ReactNode } from "react";
 import HomePage from "./pages/Home";
-import {Routes,Route} from "react-router-dom"
+import { Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import AddSite from "./pages/AddSite";
 import { Toaster } from "@/components/ui/sonner";
 import WebsitesList from "./pages/WebsiesList/WebstiesList";
+import WebsiteDashBoard from "./pages/WebsiteDashBoard/WebsiteDashBoard";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 function App() {
-
-  
-
   const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const { isSignedIn, isLoaded } = useAuth();
 
     if (!isLoaded) return null; // or a loader
 
-    return isSignedIn ? children : <RedirectToSignIn/>;
+    return isSignedIn ? children : <RedirectToSignIn />;
   };
-  
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="max-h-screen bg-background text-foreground flex flex-col">
         <NavBar />
         <div className="flex-1">
           <Routes>
@@ -48,6 +43,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <WebsitesList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/websites/:id/*"
+              element={
+                <ProtectedRoute>
+                  <WebsiteDashBoard />
                 </ProtectedRoute>
               }
             />
