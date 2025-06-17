@@ -25,8 +25,13 @@ const websiteSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["Active", "Deactive"],
-        default:"Active"
+        enum: ["Enable", "Disable"],
+        default:"Enable"
+    },
+    lastWebsiteStatus: {
+        type: Schema.Types.ObjectId,
+        ref: "Status",
+        default:null
     }
 })
 

@@ -1,9 +1,12 @@
+import type { StatusInterface } from "./Status";
+
 export interface WebsiteInterface {
   _id: string;
   name: string;
   url: string;
   logo: string;
-  enableAlerts: string;
+  enableAlerts: boolean;
   user: string;
-  status: "Active" | "Deactive";
+  status: "Enable" | "Disable";
+  lastWebsiteStatus: StatusInterface | null
 }

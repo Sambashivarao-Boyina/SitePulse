@@ -100,7 +100,7 @@ const AddSite = () => {
         "/api/website",
         {
           name: newWebsite.name,
-          url: new URL(newWebsite.url).hostname.replace(/^www\./, ""),
+          url: new URL(newWebsite.url).origin,
           logo: newWebsite.logo,
           enableAlerts: newWebsite.enableAlerts,
         },

@@ -54,7 +54,7 @@ export function CustomSidebarTrigger() {
       variant="ghost"
       size="icon"
       onClick={toggleSidebar}
-      className="h-8 w-8"
+      className="h-6 w-6 md:h-8 md:w-8"
     >
       {isCollapsed ? (
         <ChevronRight className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function CustomSidebar({ children, className }: CustomSidebarProps) {
     <div
       className={cn(
         "relative flex flex-col border-r bg-background transition-all duration-300 ease-in-out h-full",
-        isCollapsed ? "w-16" : "w-64",
+        isCollapsed ? "w-10 md:w-16" : "w-64",
         className
       )}
     >
@@ -207,15 +207,17 @@ const WebsiteDashBoardSidebar: React.FC<WebisteDashBoardSidebarProps> = ({name, 
     <CustomSidebar className="h-full flex flex-col">
       <CustomSidebarContent>
         <CustomSidebarHeader>
-          <CustomSidebarTrigger />
-          {!isCollapsed && (
-            <div className="flex items-center gap-4">
-              <div className="">{name}</div>
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={logo} alt="@shadcn" />
-              </Avatar>
-            </div>
-          )}
+          <div className="w-full flex flex-row items-center justify-evenly">
+            <CustomSidebarTrigger />
+            {!isCollapsed && (
+              <div className="flex items-center gap-4">
+                <div className="">{name}</div>
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={logo} alt="@shadcn" />
+                </Avatar>
+              </div>
+            )}
+          </div>
         </CustomSidebarHeader>
 
         <div className="flex-1 overflow-y-auto">

@@ -15,9 +15,11 @@ module.exports.addWebsite = async (req, res) => {
     user: user._id,
   });
 
-  await newWebsite.save();
+  const savedWebsite = await newWebsite.save();
 
-  res.status(200).json({ message: "Website Created Successfully" });
+  res
+    .status(200)
+    .json({ message: "Website Created Successfully", website: savedWebsite });
 };
 
 module.exports.getAllWebsiteOfUser = async (req, res) => {
@@ -52,6 +54,44 @@ module.exports.editWebsiteName = async (req, res) => {
   }
 
   website.name = req.body.name;
+
+  await website.save();
+
+  website = await Website.findById(req.params.id);
+
+  res.status(200).json(website);
+};
+
+
+module.exports.editWebsiteStatus = async (req, res) => {
+  const { userId } = req.auth();
+  const user = await User.findOne({ clerk_id: userId });
+  let website = await Website.findById(req.params.id);
+
+  if (!website.user.equals(user._id)) {
+    throw new ExpressError(404, "You have no access to this website");
+  }
+
+  website.status = req.body.status;
+
+  await website.save();
+
+  website = await Website.findById(req.params.id);
+
+  res.status(200).json(website);
+
+}
+
+module.exports.toggleWebsiteAlerts = async (req, res) => {
+  const { userId } = req.auth();
+  const user = await User.findOne({ clerk_id: userId });
+  let website = await Website.findById(req.params.id);
+
+  if (!website.user.equals(user._id)) {
+    throw new ExpressError(404, "You have no access to this website");
+  }
+
+  website.enableAlerts = req.body.enableAlerts;
 
   await website.save();
 

@@ -1,10 +1,10 @@
+const { default: axios } = require("axios");
 const Visit = require("../modals/visit");
 const Website = require("../modals/website");
 const ExpressError = require("../utils/ExpressError");
 
 module.exports.visitWebsite = async (req, res) => {
   const website = await Website.findById(req.params.id);
-
   if (!website) {
     throw new ExpressError(404, "website not found");
   }
@@ -15,8 +15,8 @@ module.exports.visitWebsite = async (req, res) => {
   let coords = null;
 
   try {
-    const response = await fetch(`http://ip-api.com/json/${ip}`);
-    ipData = await response.json();
+    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    ipData = response.data;
 
     // Check if response is successful and contains lat/lon
     if (ipData.status === "success" && ipData.lat && ipData.lon) {
@@ -73,7 +73,6 @@ module.exports.addRoutesToVisit = async (req, res) => {
   }
 
   await visit.save();
-
 
   const savedVisit = await Visit.findById(req.params.visitId);
 
