@@ -2,7 +2,7 @@
 import type { Website } from "@/types/Website";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
-import { ChartBar, Home, Logs, Trash2, Users } from "lucide-react";
+import { ChartBar, Home, Logs, Map, Trash2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import WebsiteLogs from "./WebsiteLogs";
 import WebsiteVisits from "./WebsiteVisits";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import WebsiteDashBoardSidebar from "./WebsiteDashBoardSidebar";
+import WebsiteHeatMap from "./WebsiteHeatMap";
 
 const WebsiteDashBoard = () => {
   const { id } = useParams();
@@ -24,6 +25,7 @@ const WebsiteDashBoard = () => {
     { title: "Details", href: `/websites/${id}/details`, icon: Home },
     { title: "Logs", href: `/websites/${id}/logs`, icon: Logs },
     { title: "Visitors", href: `/websites/${id}/visitors`, icon: Users },
+    { title: "HeatMap", href: `/websites/${id}/heatmap`, icon: Map},
     { title: "Analytics", href: `/websites/${id}/analytics`, icon: ChartBar },
     { title: "Delete", href: `/websites/${id}/delete`, icon: Trash2 },
   ];
@@ -76,7 +78,6 @@ const WebsiteDashBoard = () => {
   return (
     // Adjust the container to account for navbar height
     <div className="w-full h-[calc(100vh-4rem)]">
-     
       <SidebarProvider>
         <WebsiteDashBoardSidebar
           name={websiteDetails.name}
@@ -93,6 +94,7 @@ const WebsiteDashBoard = () => {
               <Route path="details" element={<WebsiteDetails />} />
               <Route path="logs" element={<WebsiteLogs />} />
               <Route path="visitors" element={<WebsiteVisits />} />
+              <Route path="heatmap" element={<WebsiteHeatMap />} />
               <Route
                 path="analytics"
                 element={<p>Analytics coming soon...</p>}

@@ -10,6 +10,7 @@ module.exports.visitWebsite = async (req, res) => {
     throw new ExpressError(404, "website not found");
   }
 
+  console.log(req.body);
   let ip =
     req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 

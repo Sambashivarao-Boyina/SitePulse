@@ -4,7 +4,7 @@ export type Visit = {
   _id: string;
   website: string;
   visitedTime: string;
-  closeTime: string;
+  closedTime: string;
   deviceType: "Desktop" | "Mobile" | "Tablet";
   location: Location;
   routes: string[];

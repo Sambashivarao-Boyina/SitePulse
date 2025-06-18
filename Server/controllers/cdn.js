@@ -9,7 +9,7 @@ module.exports.createCDNofWebsite = async (req, res) => {
         return res.send("");
     }
 
-    if (website.status === "Enable") {
+    if (website.status === "Disable") {
     
         res.set("Content-Type", "application/javascript");
         return res.send("");

@@ -1,4 +1,4 @@
 export type Location = {
-  type: string;
-  coordinates: string[];
+  type: "Point";
+  coordinates: [number, number]; // [lng, lat]
 };

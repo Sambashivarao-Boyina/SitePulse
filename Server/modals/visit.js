@@ -8,7 +8,7 @@ const visitSchema = new Schema({
   },
   visitedTime: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   closedTime: {
     type: Date,
@@ -24,7 +24,7 @@ const visitSchema = new Schema({
       default: "Point",
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
+      type: [Number, Number], // [longitude, latitude]
       required: true,
     },
   },
@@ -34,7 +34,7 @@ const visitSchema = new Schema({
     },
   ],
 });
-
+visitSchema.index({ visitedTime: 1 }, { expireAfterSeconds: 7776000 });
 visitSchema.virtual("isActive").get(function () {
   if (!this.closedTime) return true;
 

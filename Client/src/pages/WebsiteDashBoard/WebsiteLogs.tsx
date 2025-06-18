@@ -69,6 +69,15 @@ import {
 } from "@/components/ui/dialog";
 import type { Status } from "@/types/Status";
 
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+import type { ChartConfig } from "@/components/ui/chart";
 interface DateTimeRange {
   start: string;
   end: string;
@@ -358,10 +367,19 @@ const WebsiteLogs = () => {
     handleLoadLogs();
   }, []);
 
+  //response time chat
+  const responseTimeChartConfig = {
+    responseTime: {
+      label: "ResponseTime",
+      color: "#2563eb",
+    },
+    createdAt: {
+      label: "CreatedAt",
+    },
+  } satisfies ChartConfig;
+
   return (
-    <div
-      className={`h-full w-full flex justify-center p-2`}
-    >
+    <div className={`h-full w-full flex justify-center p-2`}>
       <div className="w-full md:max-w-6xl mx-auto mb-10 space-y-4">
         {/* Filters Section */}
         <Card>
@@ -690,6 +708,57 @@ const WebsiteLogs = () => {
             </div>
           </div>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Response Time</CardTitle>
+            <CardDescription>{`${dateTimeRange.start} to ${dateTimeRange.end}`}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={responseTimeChartConfig}>
+              <BarChart accessibilityLayer data={filteredLogs}>
+                <CartesianGrid vertical={false} />
+
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) => {
+                        return new Date(value).toLocaleString("en-US", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        });
+                      }}
+                      indicator="dot"
+                    />
+                  }
+                />
+                <XAxis
+                  className="hidden"
+                  dataKey="createdAt"
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleString("en-US", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  }
+                />
+                <Bar
+                  dataKey="responseTime"
+                  fill="var(--color-responseTime)"
+                  radius={8}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

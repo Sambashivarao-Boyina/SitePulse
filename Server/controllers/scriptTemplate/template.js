@@ -1,6 +1,6 @@
 const websiteId = "__WEBSITE_ID__";
-const visitUrl = `https://f857-2409-40f0-40c7-6b01-b125-24da-4caf-a0ed.ngrok-free.app/api/visit/${websiteId}`;
-const closeBaseUrl = `https://f857-2409-40f0-40c7-6b01-b125-24da-4caf-a0ed.ngrok-free.app/api/visit/${websiteId}/close`;
+const visitUrl = `http://localhost:8080/api/visit/${websiteId}`;
+const closeBaseUrl = `http://localhost:8080/api/visit/${websiteId}/close`;
 const VISIT_ID_STORAGE_KEY = "website_visit_id";
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 
