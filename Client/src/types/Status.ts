@@ -1,4 +1,4 @@
-export type StatusInterface = {
+export type Status = {
   _id: string;
   website: string;
   websiteStatus: "up" | "down";

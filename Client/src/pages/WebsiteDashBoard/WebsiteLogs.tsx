@@ -15,29 +15,27 @@ import type {
   ColumnDef,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Calendar, Filter, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Filter,
+  X,
+  Loader,
+  Trash,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -59,16 +57,17 @@ import { Badge } from "@/components/ui/badge";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useSidebar } from "./WebisteDashBoardSidebar";
-
-export type StatusInterface = {
-  _id: string;
-  website: string;
-  websiteStatus: "up" | "down";
-  statusCode: number;
-  responseTime: number;
-  createdAt: string;
-};
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import type { Status } from "@/types/Status";
 
 interface DateTimeRange {
   start: string;
@@ -84,12 +83,12 @@ const WebsiteLogs = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
 
-  const [logs, setLogs] = useState<StatusInterface[]>([]);
+  const [logs, setLogs] = useState<Status[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
-  const { isCollapsed } = useSidebar();
+  const [isDeleteingLogs, setIsDetelingLogs] = useState(false);
 
-   const [sorting, setSorting] = React.useState<SortingState>([
-    { id: 'createdAt', desc: true } // Default sort by createdAt in descending order (newest first)
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "createdAt", desc: true }, // Default sort by createdAt in descending order (newest first)
   ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -130,7 +129,32 @@ const WebsiteLogs = () => {
     return `${day}-${month}-${year} : ${formattedHours}:${minutes} ${ampm}`;
   }
 
- 
+  const handleDeleteSelectedLogs = async () => {
+    setIsDetelingLogs(true);
+    try {
+      console.log("selectedRows");
+      console.log(table.getSelectedRowModel().rows.map((row) => row.id));
+      const token = await getToken();
+      const response = await axios.delete(`/api/status/${id}`, {
+        data: {
+          ids: table.getSelectedRowModel().rows.map((row) => row.id),
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = (await response).data;
+
+      setLogs(data);
+      toast.success("Deleted Successfully");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Something went wrong try again";
+      toast.error(message);
+    }
+    setIsDetelingLogs(false);
+  };
 
   // Filter logs based on date-time and response time ranges
   const filteredLogs = useMemo(() => {
@@ -156,19 +180,18 @@ const WebsiteLogs = () => {
   }, [logs, dateTimeRange, responseTimeRange]);
 
   function getStatusCode(status: number): string {
-    
     if (status < 299) {
-      return "bg-green-500"
+      return "bg-green-500";
     } else if (status < 399) {
-      return "bg-yellow-500"
+      return "bg-yellow-500";
     } else if (status < 499) {
-      return "bg-orange-500"
+      return "bg-orange-500";
     } else {
-      return "bg-red-500"
+      return "bg-red-500";
     }
   }
 
-  const columns: ColumnDef<StatusInterface, any>[] = [
+  const columns: ColumnDef<Status, any>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -198,7 +221,15 @@ const WebsiteLogs = () => {
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("websiteStatus") as string;
-        return <Badge className={`capitalize ${status === "up" ? "bg-green-500" : "bg-red-500"}`}>{status}</Badge>;
+        return (
+          <Badge
+            className={`text-white capitalize ${
+              status === "up" ? "bg-green-500" : "bg-red-500"
+            }`}
+          >
+            {status}
+          </Badge>
+        );
       },
     },
     {
@@ -219,12 +250,7 @@ const WebsiteLogs = () => {
       cell: ({ row }) => {
         const statusCode = row.getValue("statusCode") as number;
         return (
-          <Badge
-            className={getStatusCode(statusCode)}
-            variant={
-              statusCode >= 200 && statusCode < 300 ? "default" : "secondary"
-            }
-          >
+          <Badge className={`${getStatusCode(statusCode)} text-white`}>
             {statusCode}
           </Badge>
         );
@@ -281,6 +307,7 @@ const WebsiteLogs = () => {
   const table = useReactTable({
     data: filteredLogs,
     columns,
+    getRowId: (row) => row._id,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -333,9 +360,7 @@ const WebsiteLogs = () => {
 
   return (
     <div
-      className={`h-full w-full flex justify-center p-2 ${
-        isCollapsed ? "flex" : "hidden md:flex"
-      }`}
+      className={`h-full w-full flex justify-center p-2`}
     >
       <div className="w-full md:max-w-6xl mx-auto mb-10 space-y-4">
         {/* Filters Section */}
@@ -507,11 +532,52 @@ const WebsiteLogs = () => {
                 )}
               </Button>
             </div>
-
+            <p className="leading-7 [&:not(:first-child)]:mt-6">
+              We monitor your website for every 5 minutes and calcuate the
+              response time.
+            </p>
             <div className="flex items-center gap-2 ml-auto">
-              {
-                table.getFilteredSelectedRowModel().rows.length > 0 && <Button>Delete Selected Rows</Button>
-              }
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="bg-red-500 hover:bg-red-600 text-white">
+                      Delete Selected Rows
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Trash className="h-5 w-5 text-red-600" />
+                        Delete the Selected Logs?
+                      </DialogTitle>
+                      <DialogDescription>
+                        This action is cannot be undone, after deleting it you
+                        lost your data
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="gap-2">
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button
+                        onClick={handleDeleteSelectedLogs}
+                        disabled={isDeleteingLogs}
+                        className="bg-red-600 text-white hover:bg-red-700"
+                      >
+                        {isDeleteingLogs ? (
+                          <>
+                            <Loader className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          "Delete"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -544,7 +610,7 @@ const WebsiteLogs = () => {
           </div>
 
           <div className="rounded-md border overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-w-[83vw] md:w-full ">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (

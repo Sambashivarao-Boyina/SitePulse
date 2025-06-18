@@ -11,27 +11,15 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Globe } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
-
-export interface WebsiteInterface {
-  _id: string;
-  name: string;
-  url: string;
-  logo: string;
-  enableAlerts: string;
-  user: string;
-  status: "Active" | "Deactive";
-}
+import type { Website } from "@/types/Website";
 
 interface WebsiteCardProps {
-  website: WebsiteInterface;
+  website: Website;
   onVisit?: (url: string) => void;
 }
 
-const WebsiteCard: React.FC<WebsiteCardProps> = ({
-  website,
-  onVisit,
-}) => {
-  const isActive = website.status === "Active";
+const WebsiteCard: React.FC<WebsiteCardProps> = ({ website, onVisit }) => {
+  const isActive = website.status === "Enable";
 
   const getInitials = (name: string) => {
     return name
@@ -93,22 +81,33 @@ const WebsiteCard: React.FC<WebsiteCardProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => onVisit?.(website.url)}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Visit website</p>
-                  </TooltipContent>
-                </Tooltip>
+              <div className="flex items-center gap-1">
+                {website.lastWebsiteStatus != null && (
+                  <Badge
+                    className={`uppercase ${
+                      isActive ? "bg-green-500" : "bg-red-500"
+                    } text-white`}
+                  >
+                    {website.lastWebsiteStatus?.websiteStatus}
+                  </Badge>
+                )}
+                <div className="flex items-center  opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => onVisit?.(website.url)}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Visit website</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </CardContent>

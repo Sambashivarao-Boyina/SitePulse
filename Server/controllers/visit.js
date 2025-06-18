@@ -2,6 +2,7 @@ const { default: axios } = require("axios");
 const Visit = require("../modals/visit");
 const Website = require("../modals/website");
 const ExpressError = require("../utils/ExpressError");
+const User = require("../modals/user");
 
 module.exports.visitWebsite = async (req, res) => {
   const website = await Website.findById(req.params.id);
@@ -74,7 +75,32 @@ module.exports.addRoutesToVisit = async (req, res) => {
 
   await visit.save();
 
-  const savedVisit = await Visit.findById(req.params.visitId);
+  await Visit.findById(req.params.visitId);
 
   res.status(200).json({ message: "saved" });
 };
+
+
+module.exports.getAllVisitsOfWebsite = async (req, res) => {
+  const website = await Website.findById(req.params.id);
+
+  const { userId } = req.auth();
+  if (!website) {
+    throw new ExpressError(404, "Website not found");
+  }
+
+  const user = await User.findOne({ clerk_id: userId });
+  if (!user) {
+    throw new ExpressError("user not found");
+  }
+  
+  if (!website.user.equals(user._id)) {
+    throw new ExpressError(404, "You have no access to this website");
+  }
+
+  const visits = await Visit.find({ website: website._id });
+
+  res.status(200).json(visits);
+
+  
+}

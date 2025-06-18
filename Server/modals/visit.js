@@ -10,6 +10,9 @@ const visitSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
+  closedTime: {
+    type: Date,
+  },
   deviceType: {
     type: String,
     enum: ["Desktop", "Mobile", "Tablet"],
@@ -31,6 +34,20 @@ const visitSchema = new Schema({
     },
   ],
 });
+
+visitSchema.virtual("isActive").get(function () {
+  if (!this.closedTime) return true;
+
+  // Check if closedTime is within 1 minute of current time
+  const timeDiff = Math.abs(new Date() - this.closedTime);
+  const oneMinute = 60 * 1000; 
+
+  return timeDiff <= oneMinute;
+});
+
+// Make sure virtual fields are included in JSON output
+visitSchema.set("toJSON", { virtuals: true });
+visitSchema.set("toObject", { virtuals: true });
 
 const Visit = mongoose.model("Visit", visitSchema);
 

@@ -26,7 +26,9 @@ module.exports.getAllWebsiteOfUser = async (req, res) => {
   const { userId } = req.auth();
 
   const user = await User.findOne({ clerk_id: userId });
-  const webistes = await Website.find({ user: user._id });
+  const webistes = await Website.find({ user: user._id }).populate(
+    "lastWebsiteStatus"
+  );
 
   res.status(200).json(webistes);
 };
@@ -35,7 +37,9 @@ module.exports.getWebsiteDetails = async (req, res) => {
   const { userId } = req.auth();
   const user = await User.findOne({ clerk_id: userId });
 
-  const website = await Website.findById(req.params.id);
+  const website = await Website.findById(req.params.id).populate(
+    "lastWebsiteStatus"
+  );
 
   if (!website.user.equals(user._id)) {
     throw new ExpressError(404, "You have no access to this website");

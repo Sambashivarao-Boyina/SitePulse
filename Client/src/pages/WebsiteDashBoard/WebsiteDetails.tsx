@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import type { WebsiteInterface } from "@/interfaces/Website";
+import type { Website } from "@/types/Website";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import {
@@ -14,7 +14,6 @@ import {
   Loader2,
   Globe,
   Settings,
-  Power,
   Bell,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -36,7 +35,6 @@ import {
   CodeBlockGroup,
 } from "@/components/ui/code-block";
 import { useTheme } from "@/components/theme-provider";
-import { useSidebar } from "./WebisteDashBoardSidebar";
 import { Switch } from "@/components/ui/switch";
 
 const WebsiteDetails = () => {
@@ -44,13 +42,12 @@ const WebsiteDetails = () => {
 
   const { theme } = useTheme();
   const { getToken } = useAuth();
-  const [websiteDetails, setWebsiteDetails] = useState<WebsiteInterface | null>(
+  const [websiteDetails, setWebsiteDetails] = useState<Website | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isUpdatingAlerts, setIsUpdatingAlerts] = useState(false);
-  const { isCollapsed } = useSidebar();
 
   const getDataOfWebsite = async () => {
     setIsLoading(true);
@@ -169,7 +166,9 @@ const WebsiteDetails = () => {
 
       const data = response.data;
       setWebsiteDetails(data);
-      toast.success(`Website Alerts ${newStatus ? "Enabled" :"Diabled"} successfully`);
+      toast.success(
+        `Website Alerts ${newStatus ? "Enabled" : "Diabled"} successfully`
+      );
     } catch (error: any) {
       const message =
         error?.response?.data?.message || "Cannot able to update Alerts";
@@ -206,9 +205,7 @@ const WebsiteDetails = () => {
 
   return (
     <div
-      className={`h-full   flex justify-center p-2 ${
-        isCollapsed ? "flex" : "hidden md:flex"
-      } `}
+      className="h-full   flex justify-center p-2"
     >
       <div className=" w-full md:max-w-4xl mx-auto mb-10">
         <Card className="relative overflow-hidden ">

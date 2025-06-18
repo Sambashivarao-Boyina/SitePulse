@@ -1,40 +1,36 @@
-import type { WebsiteInterface } from "@/interfaces/Website";
+// WebsiteDashBoard.tsx - Solution 1
+import type { Website } from "@/types/Website";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
-import { ChartBar, Edit2, Home, Logs, Trash2, Users } from "lucide-react";
+import { ChartBar, Home, Logs, Trash2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  CustomSidebarProvider,
-  useSidebar,
-} from "./WebisteDashBoardSidebar";
-import WebsiteDashBoardSidebar from "./WebisteDashBoardSidebar";
+
 import WebsiteDetails from "./WebsiteDetails";
 import { Skeleton } from "@/components/ui/skeleton";
 import WebsiteLogs from "./WebsiteLogs";
-
-
+import WebsiteVisits from "./WebsiteVisits";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import WebsiteDashBoardSidebar from "./WebsiteDashBoardSidebar";
 
 const WebsiteDashBoard = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
-  const [websiteDetails, setWebsiteDetails] = useState<WebsiteInterface | null>(
-    null
-  );
+  const [websiteDetails, setWebsiteDetails] = useState<Website | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-
-  // Menu items data
   const menuItems = [
-    { title: "Details", href: "details", icon: Home },
-    { title: "Logs", href: "logs", icon: Logs },
-    { title: "Visitors", href: "visitors", icon: Users },
-    { title: "Analytics", href: "analytics", icon: ChartBar },
-    { title: "Delete", href: "delete", icon: Trash2 },
+    { title: "Details", href: `/websites/${id}/details`, icon: Home },
+    { title: "Logs", href: `/websites/${id}/logs`, icon: Logs },
+    { title: "Visitors", href: `/websites/${id}/visitors`, icon: Users },
+    { title: "Analytics", href: `/websites/${id}/analytics`, icon: ChartBar },
+    { title: "Delete", href: `/websites/${id}/delete`, icon: Trash2 },
   ];
 
   const getDataOfWebsite = async () => {
+    if (!id) return;
+
     setIsLoading(true);
     try {
       const token = await getToken();
@@ -46,6 +42,7 @@ const WebsiteDashBoard = () => {
       const data = response.data;
       setWebsiteDetails(data);
     } catch (error) {
+      console.error("Error loading website data:", error);
       toast.error("Cannot able to load data");
     }
     setIsLoading(false);
@@ -53,7 +50,7 @@ const WebsiteDashBoard = () => {
 
   useEffect(() => {
     getDataOfWebsite();
-  }, []);
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -77,30 +74,37 @@ const WebsiteDashBoard = () => {
   }
 
   return (
-    // Parent container with specific height - sidebar will take only this height
-    <div className="w-full h-full">
-      <CustomSidebarProvider>
-        <div className="w-full h-[100vh] flex flex-row ">
-          <WebsiteDashBoardSidebar
-            name={websiteDetails.name}
-            logo={websiteDetails.logo}
-            menuItems={menuItems}
-          />
-          <div className="flex-1 h-full">
+    // Adjust the container to account for navbar height
+    <div className="w-full h-[calc(100vh-4rem)]">
+     
+      <SidebarProvider>
+        <WebsiteDashBoardSidebar
+          name={websiteDetails.name}
+          logo={websiteDetails.logo}
+          menuItems={menuItems}
+        />
+        <main className="flex-1 flex flex-col min-h-0">
+          <div className="p-4 border-b">
+            <SidebarTrigger />
+          </div>
+          <div className="flex-1 p-4 overflow-auto">
             <Routes>
-              {/* 👇 Default route when user visits /websites/:id */}
               <Route index element={<WebsiteDetails />} />
-
-              {/* 👇 Relative paths (no leading slash) */}
               <Route path="details" element={<WebsiteDetails />} />
-              <Route path="logs" element={<WebsiteLogs/>} />
-              <Route path="visitors" element={<p>visitors</p>} />
-              <Route path="analytics" element={<p>analytics</p>} />
-              <Route path="delete" element={<p>delete</p>} />
+              <Route path="logs" element={<WebsiteLogs />} />
+              <Route path="visitors" element={<WebsiteVisits />} />
+              <Route
+                path="analytics"
+                element={<p>Analytics coming soon...</p>}
+              />
+              <Route
+                path="delete"
+                element={<p>Delete functionality coming soon...</p>}
+              />
             </Routes>
           </div>
-        </div>
-      </CustomSidebarProvider>
+        </main>
+      </SidebarProvider>
     </div>
   );
 };

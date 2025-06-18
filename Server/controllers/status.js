@@ -43,3 +43,25 @@ module.exports.getAllStatusOfWebsite = async (req, res) => {
 
   res.status(200).json(statuses);
 }
+
+module.exports.deteleStatuses = async (req, res) => {
+  const website = await Website.findById(req.params.id);
+
+  const { userId } = req.auth();
+
+  const user = await User.findOne({ clerk_id: userId });
+  if (!website) {
+    throw new ExpressError("website not found");
+  }
+
+  if (!website.user.equals(user._id)) {
+    throw new ExpressError(404, "You have no access to this website");
+  }
+
+  
+  await Status.deleteMany({ _id: { $in: req.body.ids } });
+
+  const statuses = await Status.find({ website: website._id });
+
+  res.status(200).json(statuses);
+}

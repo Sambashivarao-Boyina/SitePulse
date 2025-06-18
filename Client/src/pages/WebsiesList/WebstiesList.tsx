@@ -1,4 +1,4 @@
-import type { WebsiteInterface } from "@/interfaces/Website";
+import type { Website } from "@/types/Website";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -28,14 +28,14 @@ import { Link } from "react-router-dom";
 
 const WebsitesList = () => {
   const { getToken } = useAuth();
-  const [websites, setWebsites] = useState<WebsiteInterface[]>([]);
-  const [filteredWebsites, setFilteredWebsites] = useState<WebsiteInterface[]>(
+  const [websites, setWebsites] = useState<Website[]>([]);
+  const [filteredWebsites, setFilteredWebsites] = useState<Website[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "Active" | "Deactive"
+    "all" | "Enable" | "Disable"
   >("all");
 
   const loadWebsites = async () => {
@@ -61,8 +61,6 @@ const WebsitesList = () => {
       setIsLoading(false);
     }
   };
-
- 
 
   const handleVisitWebsite = (url: string) => {
     const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
@@ -92,8 +90,8 @@ const WebsitesList = () => {
     loadWebsites();
   }, []);
 
-  const activeCount = websites.filter((w) => w.status === "Active").length;
-  const inactiveCount = websites.filter((w) => w.status === "Deactive").length;
+  const activeCount = websites.filter((w) => w.status === "Enable").length;
+  const inactiveCount = websites.filter((w) => w.status === "Disable").length;
 
   const LoadingSkeleton = () => (
     <div className="space-y-4">
@@ -166,7 +164,10 @@ const WebsitesList = () => {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Link to="/add-website">
-                <Button size="sm" className="shrink-0 bg-violet-600 hover:bg-violet-700 text-white">
+                <Button
+                  size="sm"
+                  className="shrink-0 bg-violet-600 hover:bg-violet-700 text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Add Website</span>
                   <span className="sm:hidden">Add</span>
@@ -178,7 +179,6 @@ const WebsitesList = () => {
           {/* Stats */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
             <Card>
-            
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -258,12 +258,12 @@ const WebsitesList = () => {
                         All Status
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setStatusFilter("Active")}
+                        onClick={() => setStatusFilter("Enable")}
                       >
                         Active Only
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setStatusFilter("Deactive")}
+                        onClick={() => setStatusFilter("Disable")}
                       >
                         Inactive Only
                       </DropdownMenuItem>

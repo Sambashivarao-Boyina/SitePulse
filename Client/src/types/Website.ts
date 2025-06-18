@@ -1,6 +1,6 @@
-import type { StatusInterface } from "./Status";
+import type { Status } from "./Status";
 
-export interface WebsiteInterface {
+export type Website = {
   _id: string;
   name: string;
   url: string;
@@ -8,5 +8,5 @@ export interface WebsiteInterface {
   enableAlerts: boolean;
   user: string;
   status: "Enable" | "Disable";
-  lastWebsiteStatus: StatusInterface | null
+  lastWebsiteStatus: Status | null
 }
