@@ -1,15 +1,18 @@
-import type { Visit } from "@/types/Visit";
-import { useAuth } from "@clerk/clerk-react";
-import axios from "axios";
-import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { toast } from "sonner";
 
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
   XAxis,
+  YAxis,
 } from "recharts";
 import {
   Card,
@@ -25,9 +28,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import type { ChartConfig } from "@/components/ui/chart";
 import { NumberTicker } from "@/components/ui/number-ticker";
-
 import {
   Select,
   SelectContent,
@@ -35,40 +36,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type DateTimeRange = {
-  start: string;
-  end: string;
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Users,
+  Monitor,
+  Smartphone,
+  Tablet,
+  TrendingUp,
+  BarChart3,
+} from "lucide-react";
+import type { Visit } from "@/types/Visit";
+import { useParams } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
+import { toast } from "sonner";
+// Helper functions to replace date-fns
+const formatDate = (date: Date, formatStr: string) => {
+  const options: Intl.DateTimeFormatOptions = {};
+  if (formatStr.includes("MMM")) {
+    options.month = "short";
+  }
+  if (formatStr.includes("dd")) {
+    options.day = "2-digit";
+  }
+  if (formatStr.includes("y")) {
+    options.year = "numeric";
+  }
+  return date.toLocaleDateString("en-US", options);
 };
 
-type DeviceStats = {
-  mobile: number;
-  tablet: number;
-  desktop: number;
+const subDays = (date: Date, days: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() - days);
+  return result;
 };
 
-type DeviceVists = {
-  device: "Desktop" | "Tablet" | "Mobile";
-  visits: number;
-};
+const parseISO = (dateString: string) => new Date(dateString);
 
-type VisitsOfDate = {
-  date: string;
-  mobile: number;
-  tablet: number;
-  desktop: number;
+const isWithinInterval = (date: Date, interval: { start: Date; end: Date }) => {
+  return date >= interval.start && date <= interval.end;
 };
-
 
 const WebsiteVisits = () => {
+  const [visits, setVisits] = useState<Visit[]>([]);
   const { id } = useParams();
   const { getToken } = useAuth();
-  const [visits, setVisits] = useState<Visit[]>([]);
-
-  const [dateTimeRange, setDateTimeRange] = useState<DateTimeRange>({
-    start: "",
-    end: "",
+  const [dateRange, setDateRange] = useState<{
+    from?: Date;
+    to?: Date;
+  }>({
+    from: subDays(new Date(), 7),
+    to: new Date(),
   });
+  const [timeRange, setTimeRange] = useState("7d");
 
   const handleGetVisitsOfData = async () => {
     try {
@@ -87,290 +116,472 @@ const WebsiteVisits = () => {
     }
   };
 
-
   useEffect(() => {
     handleGetVisitsOfData();
   }, []);
 
-  const filteredVists = useMemo(() => {
-    return visits.filter((visit) => {
-      const visitCreatedDate = new Date(visit.visitedTime);
-      const visitCloseDate = new Date(visit.closedTime);
-
-      const startDate = dateTimeRange.start
-        ? new Date(dateTimeRange.start)
-        : null;
-      const endDate = dateTimeRange.end ? new Date(dateTimeRange.end) : null;
-
-      return (
-        (!startDate || visitCreatedDate >= startDate) &&
-        (!endDate || visitCloseDate <= endDate)
-      );
-    });
-  }, [visits, dateTimeRange]);
-
-  function getDeviceCount(visits: Visit[]): DeviceStats {
-    return {
-      mobile: visits.filter((visit) => visit.deviceType === "Mobile").length,
-      tablet: visits.filter((visit) => visit.deviceType === "Tablet").length,
-      desktop: visits.filter((visit) => visit.deviceType === "Desktop").length,
-    };
-  }
-
-  const deviceStats: DeviceVists[] = useMemo(() => {
-    return [
-      {
-        device: "Mobile",
-        visits: filteredVists.filter((visit) => visit.deviceType === "Mobile")
-          .length,
-      },
-      {
-        device: "Tablet",
-        visits: filteredVists.filter((visit) => visit.deviceType === "Tablet")
-          .length,
-      },
-      {
-        device: "Desktop",
-        visits: filteredVists.filter((visit) => visit.deviceType === "Desktop")
-          .length,
-      },
-    ];
-  }, [filteredVists]);
-
-  const visitOfDate: VisitsOfDate[] = useMemo(() => {
-    const visitMap = new Map<string, Visit[]>();
-
-    for (const visit of visits) {
-      const date = visit.visitedTime.split("T")[0];
-
-      if (!visitMap.has(date)) {
-        visitMap.set(date, []);
-      }
-
-      visitMap.get(date)!.push(visit);
+  // Filter visits based on date range
+  const filteredVisits = useMemo(() => {
+    if (dateRange == null) {
+      return visits;
     }
+    if (!dateRange.from || !dateRange.to) return visits;
+
+    return visits.filter((visit) => {
+      const visitDate = parseISO(visit.visitedTime);
+      return isWithinInterval(visitDate, {
+        start: dateRange.from!,
+        end: dateRange.to!,
+      });
+    });
+  }, [visits, dateRange]);
+
+  // Update date range when timeRange changes
+  useEffect(() => {
+    const now = new Date();
+    let from: Date;
+
+    switch (timeRange) {
+      case "7d":
+        from = subDays(now, 7);
+        break;
+      case "30d":
+        from = subDays(now, 30);
+        break;
+      case "90d":
+        from = subDays(now, 90);
+        break;
+      default:
+        from = subDays(now, 7);
+    }
+
+    setDateRange({ from, to: now });
+  }, [timeRange]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const totalVisits = filteredVisits.length;
+    const activeUsers = filteredVisits.filter((v) => v.isActive).length;
+    const bounceRate =
+      (filteredVisits.filter((v) => v.routes.length === 1).length /
+        totalVisits) *
+      100;
+
+    const avgDuration =
+      filteredVisits.reduce((acc, visit) => {
+        const duration =
+          new Date(visit.closedTime).getTime() -
+          new Date(visit.visitedTime).getTime();
+        return acc + duration;
+      }, 0) /
+      filteredVisits.length /
+      1000 /
+      60; // in minutes
+
+    return {
+      totalVisits,
+      activeUsers,
+      bounceRate: isNaN(bounceRate) ? 0 : bounceRate,
+      avgDuration: isNaN(avgDuration) ? 0 : avgDuration,
+    };
+  }, [filteredVisits]);
+
+  // Visits over time data
+  const visitsOverTime = useMemo(() => {
+    const visitMap = new Map<string, number>();
+
+    filteredVisits.forEach((visit) => {
+      const date = new Date(visit.visitedTime).toISOString().split("T")[0];
+      visitMap.set(date, (visitMap.get(date) || 0) + 1);
+    });
 
     return Array.from(visitMap.entries())
-      .map(([date, visitList]) => {
-        let deviceStats = getDeviceCount(visitList);
+      .map(([date, visits]) => ({ date, visits }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [filteredVisits]);
 
-        return {
-          date: date,
-          mobile: deviceStats.mobile,
-          tablet: deviceStats.tablet,
-          desktop: deviceStats.desktop,
-        };
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Sort by date ascending (old to new)
-  }, [visits]);
+  // Device distribution data
+  const deviceData = useMemo(() => {
+    const deviceMap = new Map<string, number>();
 
-  const activeUsers = useMemo(() => {
-    return filteredVists.filter((visit) => visit.isActive).length;
-  }, [filteredVists]);
+    filteredVisits.forEach((visit) => {
+      deviceMap.set(
+        visit.deviceType,
+        (deviceMap.get(visit.deviceType) || 0) + 1
+      );
+    });
 
-  const allCoordinates = useMemo(() => {
-    return filteredVists.map((visit) => [
-      visit.location.coordinates[1],
-      visit.location.coordinates[0],
-    ]);
-  }, [filteredVists]);
+    const colors = {
+      Desktop: "#3b82f6",
+      Mobile: "#ef4444",
+      Tablet: "#8b5cf6",
+    };
+
+    return Array.from(deviceMap.entries()).map(([device, count]) => ({
+      device,
+      count,
+      fill: colors[device as keyof typeof colors],
+    }));
+  }, [filteredVisits]);
+
+  // Visit duration histogram
+  const durationData = useMemo(() => {
+    const durations = filteredVisits.map((visit) => {
+      const duration =
+        new Date(visit.closedTime).getTime() -
+        new Date(visit.visitedTime).getTime();
+      return Math.floor(duration / 1000 / 60); // in minutes
+    });
+
+    const buckets = [
+      { range: "0-1 min", min: 0, max: 1 },
+      { range: "1-5 min", min: 1, max: 5 },
+      { range: "5-15 min", min: 5, max: 15 },
+      { range: "15-30 min", min: 15, max: 30 },
+      { range: "30+ min", min: 30, max: Infinity },
+    ];
+
+    return buckets.map((bucket) => ({
+      range: bucket.range,
+      count: durations.filter((d) => d >= bucket.min && d < bucket.max).length,
+    }));
+  }, [filteredVisits]);
+
+  // Popular routes data
+  const routesData = useMemo(() => {
+    const routeMap = new Map<string, number>();
+
+    filteredVisits.forEach((visit) => {
+      visit.routes.forEach((route) => {
+        routeMap.set(route, (routeMap.get(route) || 0) + 1);
+      });
+    });
+
+    return Array.from(routeMap.entries())
+      .map(([route, count]) => ({ route, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [filteredVisits]);
+
 
   useEffect(() => {
-    console.log(allCoordinates);
-  }, [allCoordinates]);
+    console.log("Route", routesData);
+  },[routesData])
 
-  const [timeRange, setTimeRange] = React.useState("90d");
+  const chartConfig = {
+    visits: { label: "Visits", color: "#3b82f6" },
+    desktop: { label: "Desktop", color: "#3b82f6" },
+    mobile: { label: "Mobile", color: "#ef4444" },
+    tablet: { label: "Tablet", color: "#8b5cf6" },
+    count: { label: "Count", color: "#3b82f6" },
+  };
 
-  const filteredData = useMemo(() => {
-    if (visitOfDate.length === 0) return [];
+  const devicesPieChartConfig = {
+    device: { label: "Device Type", color: "#8884d8" }, // used for tooltip/legend
+    count: { label: "Count", color: "#3b82f6" }, // used as value
+  };
 
-    // Get the current date or the latest date from your data
-    const today = new Date();
-
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
-    }
-
-    // Calculate the start date based on current date
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-
-    return visitOfDate
-      .filter((item) => {
-        const date = new Date(item.date);
-        return date >= startDate && date <= today;
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [visitOfDate, timeRange]);
-
-  const visitsOfDifferntDeviceConfig = {
-    visitors: {
-      label: "Visitors",
-    },
-    desktop: {
-      label: "Desktop",
-      color: "#2563eb", // Blue-600
-    },
-    tablet: {
-      label: "Tablet",
-      color: "#7c3aed", // Violet-600
-    },
-    mobile: {
-      label: "Mobile",
-      color: "#dc2626", // Red-600
-    },
-  } satisfies ChartConfig;
+  const routesBarChatConfig = {
+    count: { label: "Visits", color: "#3b82f6" },
+  };
 
   return (
-    <div className="w-full md:max-w-6xl mx-auto mb-10 space-y-4 flex flex-col items-center">
-      <p className="whitespace-pre-wrap text-8xl font-medium tracking-tighter text-black dark:text-white">
-        {activeUsers > 0 ? <NumberTicker value={activeUsers} /> : "0"}
-      </p>
-      <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-        Active Users
-      </h3>
+    <div className="w-full md:max-w-7xl mx-auto md:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Website Analytics
+          </h1>
+          <p className="text-muted-foreground">
+            Track your website visits and user behavior
+          </p>
+        </div>
 
-      <Card className="pt-0 w-full">
-        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-          <div className="grid flex-1 gap-1">
-            <CardTitle>Specific device Visits</CardTitle>
-            <CardDescription>
-              {`Showing total visitors for the last ${
-                timeRange === "7d"
-                  ? "7 Days"
-                  : timeRange === "30d"
-                  ? "1 Month"
-                  : "3 Months"
-              } using different
-              devices`}
-            </CardDescription>
-          </div>
+        {/* Time Range Controls */}
+        <div className="flex flex-col items-start md:flex-row  md:items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder="Last 3 months" />
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
-              </SelectItem>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-        </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <ChartContainer
-            config={visitsOfDifferntDeviceConfig}
-            className="aspect-auto h-[250px] w-full"
-          >
-            <AreaChart data={filteredData}>
-              <defs>
-                <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-desktop)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-desktop)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-                <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-mobile)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-mobile)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-                <linearGradient id="fillTablet" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-tablet)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-tablet)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  });
-                }}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => {
-                      return new Date(value).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      });
-                    }}
-                    indicator="dot"
-                  />
-                }
-              />
-              <Area
-                dataKey="mobile"
-                type="natural"
-                fill="url(#fillMobile)"
-                stroke="var(--color-mobile)"
-                stackId="a"
-              />
-              <Area
-                dataKey="tablet"
-                type="natural"
-                fill="url(#fillTablet)"
-                stroke="var(--color-tablet)"
-                stackId="a"
-              />
-              <Area
-                dataKey="desktop"
-                type="natural"
-                fill="url(#fillDesktop)"
-                stroke="var(--color-desktop)"
-                stackId="a"
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
 
-     
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {formatDate(dateRange.from, "MMM dd, yyyy")} -{" "}
+                      {formatDate(dateRange.to, "MMM dd, yyyy")}
+                    </>
+                  ) : (
+                    formatDate(dateRange.from, "MMM dd, yyyy")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={(range) => {
+                  if (!range?.from || !range?.to) return;
+                  setDateRange({ from: range.from, to: range.to });
+                }}
+                numberOfMonths={2}
+                className="rounded-md border shadow-sm"
+                captionLayout="dropdown"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              <NumberTicker value={stats.totalVisits} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {formatDate(dateRange.from || new Date(), "MMM dd")} -{" "}
+              {formatDate(dateRange.to || new Date(), "MMM dd")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              <NumberTicker value={stats.activeUsers} />
+            </div>
+            <p className="text-xs text-muted-foreground">Currently online</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg. Duration</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.avgDuration.toFixed(1)}m
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Average session time
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.bounceRate.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground">Single page visits</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Visits Over Time */}
+        <Card className="col-span-1 lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Visits Over Time</CardTitle>
+            <CardDescription>
+              Daily visit trends for the selected period
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <AreaChart data={visitsOverTime}>
+                <defs>
+                  <linearGradient id="fillVisits" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-visits)"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-visits)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value) =>
+                    formatDate(new Date(value), "MMM dd")
+                  }
+                />
+                <YAxis />
+                <ChartTooltip
+                  content={<ChartTooltipContent />}
+                  labelFormatter={(value) =>
+                    formatDate(new Date(value), "MMM dd, yyyy")
+                  }
+                />
+                <Area
+                  type="monotone"
+                  dataKey="visits"
+                  stroke="var(--color-visits)"
+                  fillOpacity={1}
+                  fill="url(#fillVisits)"
+                />
+              </AreaChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Device Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Device Distribution</CardTitle>
+            <CardDescription>Visits by device type</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={devicesPieChartConfig}
+              className="h-[300px] w-full"
+            >
+              <PieChart>
+                <Pie
+                  data={deviceData}
+                  dataKey="count" // value
+                  nameKey="device" // label
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                >
+                  {deviceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+              </PieChart>
+            </ChartContainer>
+            <div className="flex justify-center gap-4 mt-4">
+              {deviceData.map((item) => (
+                <div key={item.device} className="flex items-center gap-2">
+                  {item.device === "Desktop" && <Monitor className="h-4 w-4" />}
+                  {item.device === "Mobile" && (
+                    <Smartphone className="h-4 w-4" />
+                  )}
+                  {item.device === "Tablet" && <Tablet className="h-4 w-4" />}
+                  <Badge variant="secondary">
+                    {item.device}: {item.count}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Visit Duration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Visit Duration</CardTitle>
+            <CardDescription>Distribution of session lengths</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <BarChart data={durationData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="range" />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar
+                  dataKey="count"
+                  fill="var(--color-count)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Popular Routes */}
+        <Card className="col-span-1 lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Popular Routes (Line Chart)</CardTitle>
+            <CardDescription>
+              Most visited pages on your website
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <LineChart data={routesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="route"
+                  tickLine={false}
+                  axisLine={false}
+                  angle={-45}
+                  textAnchor="end"
+                  interval={0}
+                  height={70}
+                  stroke="#94a3b8"
+                  className="hidden"
+                />
+                <YAxis stroke="#94a3b8" />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(label) => `Route: ${label}`}
+                    />
+                  }
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="var(--color-count)"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
 
 export default WebsiteVisits;
+
+

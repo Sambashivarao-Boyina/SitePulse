@@ -224,6 +224,9 @@ const WebsiteHeatMap = () => {
           </CollapsibleContent>
         </Collapsible>
       </Card>
+      <p className="leading-7 [&:not(:first-child)]:mb-6">
+        These locations are approximate and may not reflect the user's exact position, as they are derived from internet-based services.
+      </p>
       <MapContainer
         center={[20.5937, 78.9629]} // Center of India
         zoom={5}

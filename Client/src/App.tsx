@@ -9,6 +9,7 @@ import AddSite from "./pages/AddSite";
 import { Toaster } from "@/components/ui/sonner";
 import WebsitesList from "./pages/WebsiesList/WebstiesList";
 import WebsiteDashBoard from "./pages/WebsiteDashBoard/WebsiteDashBoard";
+import Docs from "./pages/Docs";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -26,9 +27,9 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="max-h-screen bg-background text-foreground flex flex-col">
+      <div className="max-h-screen h-full bg-background text-foreground flex flex-col">
         <NavBar />
-        <div className="flex-1">
+        <div className="flex-1 w-full">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route
@@ -56,6 +57,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/docs" element={<Docs/>} /> 
           </Routes>
         </div>
         {!location.pathname.includes("/websites/") && <Footer />}

@@ -105,3 +105,54 @@ module.exports.getAllVisitsOfWebsite = async (req, res) => {
 
   
 }
+
+module.exports.sendDataForExtrenalSite = async (req, res) => {
+  const website = await Website.findById(req.params.id);
+
+  if (!website) {
+    throw new ExpressError("Website Not Found", 404);
+  }
+
+  const visits = await Visit.find({ website: website._id });
+
+  // Active users (based on the virtual field)
+  const activeUsers = visits.filter((visit) => visit.isActive).length;
+
+  // Calculate average session time in milliseconds
+  const completedSessions = visits.filter((v) => v.closedTime);
+  let totalSessionTime = 0;
+
+  completedSessions.forEach((visit) => {
+    const duration = new Date(visit.closedTime) - new Date(visit.visitedTime);
+    totalSessionTime += duration;
+  });
+
+  const averageSessionTime =
+    completedSessions.length > 0
+      ? Math.round(totalSessionTime / completedSessions.length)
+      : 0;
+
+  // Date ranges
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+
+  const past7daysUsers = visits.filter(
+    (v) => new Date(v.visitedTime) >= sevenDaysAgo
+  ).length;
+
+  const pastMonthUsers = visits.filter(
+    (v) => new Date(v.visitedTime) >= thirtyDaysAgo
+  ).length;
+
+  return res.json({
+    past3MonthsUsers: visits.length,
+    activeUsers,
+    averageSessionTime, // in milliseconds
+    past7daysUsers,
+    pastMonthUsers,
+  });
+}

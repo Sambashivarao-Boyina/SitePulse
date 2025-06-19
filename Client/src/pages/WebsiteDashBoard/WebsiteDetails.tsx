@@ -75,7 +75,6 @@ const WebsiteDetails = () => {
 
   const code = `<script src="${currentOrigin}/api/cdn/${id}"></script>`;
 
-  console.log(code);
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);

@@ -14,6 +14,7 @@ import WebsiteVisits from "./WebsiteVisits";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import WebsiteDashBoardSidebar from "./WebsiteDashBoardSidebar";
 import WebsiteHeatMap from "./WebsiteHeatMap";
+import WebsiteLiveStatsBadge from "./WebsiteLiveStatsBadge";
 
 const WebsiteDashBoard = () => {
   const { id } = useParams();
@@ -26,7 +27,7 @@ const WebsiteDashBoard = () => {
     { title: "Logs", href: `/websites/${id}/logs`, icon: Logs },
     { title: "Visitors", href: `/websites/${id}/visitors`, icon: Users },
     { title: "HeatMap", href: `/websites/${id}/heatmap`, icon: Map},
-    { title: "Analytics", href: `/websites/${id}/analytics`, icon: ChartBar },
+    { title: "Live Stats Badge", href: `/websites/${id}/badge`, icon: ChartBar },
     { title: "Delete", href: `/websites/${id}/delete`, icon: Trash2 },
   ];
 
@@ -96,8 +97,8 @@ const WebsiteDashBoard = () => {
               <Route path="visitors" element={<WebsiteVisits />} />
               <Route path="heatmap" element={<WebsiteHeatMap />} />
               <Route
-                path="analytics"
-                element={<p>Analytics coming soon...</p>}
+                path="badge"
+                element={<WebsiteLiveStatsBadge/>}
               />
               <Route
                 path="delete"
