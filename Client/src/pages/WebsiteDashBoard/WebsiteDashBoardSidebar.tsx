@@ -45,7 +45,7 @@ const WebsiteDashBoardSidebar: React.FC<WebsiteDashBoardProps> = ({
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.href}>
-                      <item.icon />
+                      <item.icon className="text-blue-600" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

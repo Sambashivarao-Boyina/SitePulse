@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const Visit = require("./visit");
+const Status = require("./status");
 
 const websiteSchema = new Schema({
     url: {
@@ -34,6 +36,21 @@ const websiteSchema = new Schema({
         default:null
     }
 })
+
+websiteSchema.pre("findOneAndDelete", async function (next) {
+  const docToDelete = await this.model.findOne(this.getFilter());
+
+  if (docToDelete) {
+    console.log("About to delete website:", docToDelete._id);
+      await Visit.deleteMany({ Website: docToDelete._id });
+      await Status.deleteMany({ website: docToDelete._id });
+    await mongoose
+      .model("Status")
+      .deleteOne({ _id: docToDelete.lastWebsiteStatus });
+  }
+
+  next();
+});
 
 const Website = mongoose.model("Website", websiteSchema);
 

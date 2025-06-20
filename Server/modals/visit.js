@@ -24,7 +24,7 @@ const visitSchema = new Schema({
       default: "Point",
     },
     coordinates: {
-      type: [Number, Number], // [longitude, latitude]
+      type: [Number, Number], // [Latitude, Logitude]
       required: true,
     },
   },

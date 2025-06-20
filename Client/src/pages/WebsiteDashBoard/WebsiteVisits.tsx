@@ -296,6 +296,9 @@ const WebsiteVisits = () => {
           <p className="text-muted-foreground">
             Track your website visits and user behavior
           </p>
+          <p className="text-muted-foreground">
+            Your website visits data will be deleted automatically after 3 months of it created.
+          </p>
         </div>
 
         {/* Time Range Controls */}

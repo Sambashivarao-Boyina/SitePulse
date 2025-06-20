@@ -126,7 +126,7 @@ const WebsitesList = () => {
         </p>
         {!searchQuery && statusFilter === "all" && (
           <Link to="/add-website">
-            <Button className="bg-violet-500 hover:bg-violet-600">
+            <Button className="bg-blue-500 hover:bg-blue-600">
               <Plus className="w-4 h-4 mr-2" />
               Add Website
             </Button>
@@ -143,7 +143,7 @@ const WebsitesList = () => {
         <div className="mb-8">
           <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <h1 className="text-2xl text-blue-600 font-bold tracking-tight sm:text-3xl">
                 Website Monitor
               </h1>
               <p className="text-muted-foreground">
@@ -166,7 +166,7 @@ const WebsitesList = () => {
               <Link to="/add-website">
                 <Button
                   size="sm"
-                  className="shrink-0 bg-violet-600 hover:bg-violet-700 text-white"
+                  className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Add Website</span>
@@ -231,7 +231,7 @@ const WebsitesList = () => {
 
           {/* Search and Filter */}
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

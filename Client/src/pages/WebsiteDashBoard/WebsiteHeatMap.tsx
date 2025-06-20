@@ -115,10 +115,12 @@ const WebsiteHeatMap = () => {
   }, [visits, dateTimeRange]);
 
   const allCoordinates = useMemo(() => {
-    return filteredVists.map((visit) => [
-      visit.location.coordinates[1],
-      visit.location.coordinates[0],
-    ]);
+    return filteredVists
+      .filter((visit) => visit.location?.coordinates.length === 2)
+      .map((visit) => [
+        visit.location.coordinates[0],
+        visit.location.coordinates[1],
+      ]);
   }, [filteredVists, dateTimeRange]);
 
   return (

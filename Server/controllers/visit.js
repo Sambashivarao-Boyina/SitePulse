@@ -9,8 +9,6 @@ module.exports.visitWebsite = async (req, res) => {
   if (!website) {
     throw new ExpressError(404, "website not found");
   }
-
-  console.log(req.body);
   let ip =
     req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
@@ -24,11 +22,11 @@ module.exports.visitWebsite = async (req, res) => {
     if (ipData.status === "success" && ipData.lat && ipData.lon) {
       coords = {
         type: "Point",
-        coordinates: [ipData.lon, ipData.lat],
+        coordinates: [ipData.lat, ipData.lon],
       };
-    }
+    } 
   } catch (error) {
-    console.log(error);
+    
   }
 
   let newVisit = null;

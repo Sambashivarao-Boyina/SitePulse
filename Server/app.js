@@ -13,6 +13,7 @@ const websiteRouter = require("./routes/website");
 const visitRouter = require("./routes/visit");
 const cdnRouter = require("./routes/cdn");
 const statusRouter = require("./routes/status");
+const sendEmails = require("./utils/sendEmail");
 
 
 dotenv.config();
@@ -41,6 +42,11 @@ corn.schedule("*/5 * * * *", async () => {
   websites.forEach(async (site) => {
     if (site.status === "Enable") {
       const websiteStatus = await checkWebsiteStatus(site.url);
+      console.log(websiteStatus);
+      if (websiteStatus.status === "down") {
+        await sendEmails(["boyinasambashivarao@gmail.com"], site, websiteStatus);
+      }
+
       const status = new Status({
         website: site._id,
         websiteStatus: websiteStatus.status,

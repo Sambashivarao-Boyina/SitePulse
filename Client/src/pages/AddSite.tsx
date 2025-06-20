@@ -191,7 +191,7 @@ const AddSite = () => {
             )}
           />
           <Button
-            className="bg-violet-500 w-full disabled:cursor-not-allowed hover:bg-violet-600 text-white"
+            className="bg-blue-600 w-full disabled:cursor-not-allowed hover:bg-blue-700 text-white"
             type="submit"
             disabled={isSubmitting}
           >

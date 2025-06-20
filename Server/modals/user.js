@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Website = require("./website");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -27,6 +28,20 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+});
+
+userSchema.pre("findOneAndDelete", async function (next) {
+  const docToDelete = await this.model.findOne(this.getFilter());
+
+  if (docToDelete) {
+    console.log("About to delete website:", docToDelete._id);
+    await Website.deleteMany({ user: docToDelete._id });
+    await mongoose
+      .model("Status")
+      .deleteOne({ _id: docToDelete.lastWebsiteStatus });
+  }
+
+  next();
 });
 
 const User = mongoose.model("User", userSchema);
