@@ -64,8 +64,6 @@ function createNewVisit() {
 
 // On window load
 window.onload = () => {
-  console.log("Page loaded");
-
   const storedVisitID = localStorage.getItem(VISIT_ID_STORAGE_KEY);
   const isSameTabSession = sessionStorage.getItem("active_session");
 

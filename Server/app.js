@@ -36,7 +36,7 @@ async function main() {
   await mongoose.connect(process.env.MONGO_DB_URL);
 }
 
-corn.schedule("*/1 * * * *", async () => {
+corn.schedule("*/5 * * * *", async () => {
   const websites = await Website.find().populate("user");
 
   websites.forEach(async (site) => {

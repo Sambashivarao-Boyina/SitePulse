@@ -7,10 +7,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BarChart3, BookOpen, Eye, Globe, Menu, Plus } from "lucide-react";
+import { BookOpen, Eye, Menu, Plus } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { ModeToggle } from "./mode-toggle";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import logo from "../assets/sitepulse_logo.png";
 
 const NavBar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -25,10 +26,8 @@ const NavBar = () => {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <NavLink to={"/"}>
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <Globe className="h-6 w-6 text-white" />
-            </div>
+          <div className="flex items-center space-x-1">
+            <img className="h-12 w-12" src={logo} />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               SitePulse
             </span>
@@ -87,9 +86,7 @@ const NavBar = () => {
               <SheetHeader>
                 <SheetTitle className="flex items-center justify-between space-x-2 mt-6">
                   <div className="flex flex-row items-center gap-2">
-                    <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                      <Globe className="h-5 w-5 text-white" />
-                    </div>
+                    <img className="h-12 w-12" src={logo} />
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       SitePulse
                     </span>
