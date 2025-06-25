@@ -4,5 +4,6 @@ export type Status = {
   websiteStatus: "up" | "down";
   statusCode: number;
   responseTime: number;
-  createdAt: string
+  createdAt: string,
+  errorMessage: string | null
 }

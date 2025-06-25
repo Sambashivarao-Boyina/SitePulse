@@ -20,11 +20,15 @@ const websiteSchema = new Schema({
         type: String,
         required:true
     },
-    enableAlerts: {
-        type: Boolean,
-        default:true,
-        required:true
+    alerts: {
+        type: Number,
+        default:0
     },
+    alertEmails: [
+        {
+            type:String
+        }
+    ],
     status: {
         type: String,
         enum: ["Enable", "Disable"],
@@ -37,20 +41,30 @@ const websiteSchema = new Schema({
     }
 })
 
-websiteSchema.pre("findOneAndDelete", async function (next) {
-  const docToDelete = await this.model.findOne(this.getFilter());
+
+async function handleDelete(next) {
+  const filter = this.getFilter();
+  const docToDelete = await this.model.findOne(filter);
 
   if (docToDelete) {
-    console.log("About to delete website:", docToDelete._id);
-      await Visit.deleteMany({ Website: docToDelete._id });
-      await Status.deleteMany({ website: docToDelete._id });
-    await mongoose
-      .model("Status")
-      .deleteOne({ _id: docToDelete.lastWebsiteStatus });
+    await Visit.deleteMany({ Website: docToDelete._id });
+    await Status.deleteMany({ website: docToDelete._id });
+
+    if (docToDelete.lastWebsiteStatus) {
+      await mongoose
+        .model("Status")
+        .deleteOne({ _id: docToDelete.lastWebsiteStatus });
+    }
   }
 
   next();
-});
+}
+  
+websiteSchema.pre("findOneAndDelete", handleDelete);
+websiteSchema.pre("findOneAndRemove", handleDelete);
+websiteSchema.pre("deleteOne", { document: false, query: true }, handleDelete);
+websiteSchema.pre("deleteMany", { document: false, query: true }, handleDelete);
+
 
 const Website = mongoose.model("Website", websiteSchema);
 

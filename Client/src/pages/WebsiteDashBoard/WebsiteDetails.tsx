@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+
 import type { Website } from "@/types/Website";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
@@ -14,7 +15,14 @@ import {
   Loader2,
   Globe,
   Settings,
-  Bell,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  Zap,
+  Mail,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -35,7 +43,7 @@ import {
   CodeBlockGroup,
 } from "@/components/ui/code-block";
 import { useTheme } from "@/components/theme-provider";
-import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const WebsiteDetails = () => {
   const { id } = useParams();
@@ -47,7 +55,12 @@ const WebsiteDetails = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isUpdatingAlerts, setIsUpdatingAlerts] = useState(false);
+  
+  // Alert emails state
+  const [alertEmails, setAlertEmails] = useState<string[]>([]);
+  const [newEmail, setNewEmail] = useState("");
+  const [isUpdatingEmails, setIsUpdatingEmails] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   const getDataOfWebsite = async () => {
     setIsLoading(true);
@@ -60,6 +73,10 @@ const WebsiteDetails = () => {
       });
       const data = response.data;
       setWebsiteDetails(data);
+      // Set alert emails from the response (assuming they're in data.alertEmails)
+      if (data.alertEmails) {
+        setAlertEmails(data.alertEmails);
+      }
     } catch (error) {
       toast.error("Cannot able to load data");
     }
@@ -101,7 +118,6 @@ const WebsiteDetails = () => {
           },
         }
       );
-
       const data = response.data;
       setWebsiteDetails(data);
       toast.success("Name is Updated");
@@ -111,6 +127,128 @@ const WebsiteDetails = () => {
       toast.error(message);
     }
     setIsUpdatingName(false);
+  }
+
+  const getAlertEmailsSection = () => {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <Mail className="h-5 w-5 text-blue-600" />
+          Alert Emails
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Add up to 5 email addresses to receive notifications when your website
+          goes down.
+        </p>
+
+        {/* Add New Email */}
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                placeholder="Enter email address"
+                value={newEmail}
+                onChange={(e) => {
+                  setNewEmail(e.target.value);
+                  setEmailError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddEmail();
+                  }
+                }}
+                className="focus:ring-2 focus:ring-blue-500"
+                disabled={isUpdatingEmails || alertEmails.length >= 5}
+              />
+            </div>
+            <Button
+              onClick={handleAddEmail}
+              disabled={
+                isUpdatingEmails || alertEmails.length >= 5 || !newEmail.trim()
+              }
+              className="bg-blue-600 hover:bg-blue-700 px-4 text-white"
+            >
+              {isUpdatingEmails ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Email Error */}
+          {emailError && (
+            <div className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {emailError}
+            </div>
+          )}
+
+          {/* Email Count */}
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            {alertEmails.length}/5 emails added
+          </div>
+        </div>
+
+        {/* Current Emails List */}
+        {alertEmails.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Current Alert Emails:</Label>
+            <div className="space-y-2">
+              {alertEmails.map((email, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-slate-500" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300 font-mono">
+                      {email}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveEmail(email)}
+                    disabled={isUpdatingEmails}
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {alertEmails.length === 0 && (
+          <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+            <Mail className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              No alert emails configured
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              Add email addresses to receive downtime notifications
+            </p>
+          </div>
+        )}
+
+        <Alert className="border-yellow-100 bg-yellow-500/20 text-yellow-800">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="ml-2">
+            After 3 consecutive alerts when your website is down, your website
+            will be automatically disabled. You can enable it again once the
+            server is back up.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+
+     
   };
 
   const handleStatusToggle = async () => {
@@ -144,17 +282,45 @@ const WebsiteDetails = () => {
     setIsUpdatingStatus(false);
   };
 
-  const handleToggleAlerts = async () => {
-    if (!websiteDetails) return;
+  // Email validation function
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-    const newStatus = !websiteDetails.enableAlerts;
-    setIsUpdatingAlerts(true);
+  // Add email function
+  const handleAddEmail = async () => {
+    setEmailError("");
+    
+    if (!newEmail.trim()) {
+      setEmailError("Please enter an email address");
+      return;
+    }
+
+    if (!isValidEmail(newEmail.trim())) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    if (alertEmails.includes(newEmail.trim())) {
+      setEmailError("This email is already added");
+      return;
+    }
+
+    if (alertEmails.length >= 5) {
+      setEmailError("Maximum 5 emails allowed");
+      return;
+    }
+
+    setIsUpdatingEmails(true);
     try {
       const token = await getToken();
-      const response = await axios.patch(
-        `/api/website/${id}/enableAlerts`,
+      const updatedEmails = [...alertEmails, newEmail.trim()];
+      console.log("sending request");
+      await axios.patch(
+        `/api/website/${id}/alertEmails`,
         {
-          enableAlerts: newStatus,
+          alertEmails: updatedEmails,
         },
         {
           headers: {
@@ -163,17 +329,137 @@ const WebsiteDetails = () => {
         }
       );
 
-      const data = response.data;
-      setWebsiteDetails(data);
-      toast.success(
-        `Website Alerts ${newStatus ? "Enabled" : "Diabled"} successfully`
-      );
+      setAlertEmails(updatedEmails);
+      setNewEmail("");
+      toast.success("Email added successfully");
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || "Cannot able to update Alerts";
+        error?.response?.data?.message || "Failed to add email";
+      toast.error(message);
+      setEmailError(message);
+    }
+    setIsUpdatingEmails(false);
+  };
+
+  // Remove email function
+  const handleRemoveEmail = async (emailToRemove: string) => {
+    setIsUpdatingEmails(true);
+    try {
+      const token = await getToken();
+      const updatedEmails = alertEmails.filter(email => email !== emailToRemove);
+      
+      await axios.patch(
+        `/api/website/${id}/alertEmails`,
+        {
+          alertEmails: updatedEmails,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAlertEmails(updatedEmails);
+      toast.success("Email removed successfully");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Failed to remove email";
       toast.error(message);
     }
-    setIsUpdatingAlerts(false);
+    setIsUpdatingEmails(false);
+  };
+
+  const formatResponseTime = (responseTime: number) => {
+    if (responseTime < 1000) {
+      return `${responseTime}ms`;
+    }
+    return `${(responseTime / 1000).toFixed(2)}s`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+
+  const getWebsiteStatusDisplay = () => {
+    if (!websiteDetails?.lastWebsiteStatus) return null;
+
+    const { websiteStatus, statusCode, responseTime, errorMessage, createdAt } = websiteDetails.lastWebsiteStatus;
+
+    const isUp = websiteStatus === 'up';
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <Zap className="h-5 w-5 text-blue-600" />
+          Website Status
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Status Badge */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <div className="flex items-center gap-3">
+              {isUp ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-500" />
+              )}
+              <div>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Status</p>
+                <p className={`font-semibold ${isUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {isUp ? 'Online' : 'Offline'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Response Time */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Response Time</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  {responseTime ? formatResponseTime(responseTime) : 'N/A'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Code */}
+          <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-indigo-500" />
+              <div>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Status Code</p>
+                <p className={`font-semibold ${statusCode >= 200 && statusCode < 300 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {statusCode || 'N/A'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message Alert */}
+        {errorMessage && (
+          <div className="border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="text-red-800 dark:text-red-200 text-sm">
+                <strong>Error:</strong> {errorMessage}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Last Check Time */}
+        <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          Last checked: {formatDate(createdAt)}
+        </div>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -203,11 +489,9 @@ const WebsiteDetails = () => {
   }
 
   return (
-    <div
-      className="h-full   flex justify-center p-2"
-    >
-      <div className=" w-full md:max-w-4xl mx-auto mb-10">
-        <Card className="relative overflow-hidden ">
+    <div className="h-full flex justify-center p-2">
+      <div className="w-full md:max-w-4xl mx-auto mb-10">
+        <Card className="relative overflow-hidden">
           {/* Status Badge - Top Right */}
           <div className="absolute top-4 right-4 z-10">
             <Button
@@ -331,6 +615,9 @@ const WebsiteDetails = () => {
           </CardHeader>
 
           <CardContent className="space-y-8 px-4 md:px-8">
+            {/* Website Status Section */}
+            {websiteDetails.lastWebsiteStatus && getWebsiteStatusDisplay()}
+
             {/* URL Section */}
             <div className="space-y-3">
               <Label
@@ -413,22 +700,10 @@ const WebsiteDetails = () => {
               </div>
             </div>
 
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <Label className="flex items-center">
-                  <Bell className="h-5 w-5 text-indigo-600" /> Alerts for
-                  Website Status
-                </Label>
-                <p>You can receive email alert when your website is down.</p>
-              </div>
-              <Switch
-                disabled={isUpdatingAlerts}
-                checked={websiteDetails.enableAlerts}
-                onCheckedChange={handleToggleAlerts}
-              />
-            </div>
+            {/* Alert Emails Section */}
+            {getAlertEmailsSection()}
 
-            {websiteDetails.status != null && <div></div>}
+
           </CardContent>
         </Card>
       </div>

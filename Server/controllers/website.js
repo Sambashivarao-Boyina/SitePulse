@@ -66,7 +66,6 @@ module.exports.editWebsiteName = async (req, res) => {
   res.status(200).json(website);
 };
 
-
 module.exports.editWebsiteStatus = async (req, res) => {
   const { userId } = req.auth();
   const user = await User.findOne({ clerk_id: userId });
@@ -77,16 +76,18 @@ module.exports.editWebsiteStatus = async (req, res) => {
   }
 
   website.status = req.body.status;
+  if (req.body.status === "Enable") {
+    website.alerts = 0;
+  }
 
   await website.save();
 
   website = await Website.findById(req.params.id);
 
   res.status(200).json(website);
+};
 
-}
-
-module.exports.toggleWebsiteAlerts = async (req, res) => {
+module.exports.updateAlertEmails = async (req, res) => {
   const { userId } = req.auth();
   const user = await User.findOne({ clerk_id: userId });
   let website = await Website.findById(req.params.id);
@@ -95,11 +96,25 @@ module.exports.toggleWebsiteAlerts = async (req, res) => {
     throw new ExpressError(404, "You have no access to this website");
   }
 
-  website.enableAlerts = req.body.enableAlerts;
+  website.alertEmails = req.body.alertEmails;
 
   await website.save();
 
   website = await Website.findById(req.params.id);
 
   res.status(200).json(website);
+};
+
+module.exports.deleteWebsite = async (req, res) => {
+  const { userId } = req.auth();
+  const user = await User.findOne({ clerk_id: userId });
+  let website = await Website.findById(req.params.id);
+
+  if (!website.user.equals(user._id)) {
+    throw new ExpressError(404, "You have no access to this website");
+  }
+
+  await Website.findOneAndDelete({ _id: website._id });
+
+  res.status(200).json({ message: "Deleted Successfully" });
 };

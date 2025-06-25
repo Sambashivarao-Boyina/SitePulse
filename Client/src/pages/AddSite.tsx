@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@clerk/clerk-react";
@@ -41,7 +40,6 @@ interface NewWebsiteSchmea {
   url: string;
   name: string;
   logo: string;
-  enableAlerts: boolean;
 }
 
 const AddSite = () => {
@@ -102,7 +100,6 @@ const AddSite = () => {
           name: newWebsite.name,
           url: new URL(newWebsite.url).origin,
           logo: newWebsite.logo,
-          enableAlerts: newWebsite.enableAlerts,
         },
         {
           headers: {
@@ -170,26 +167,7 @@ const AddSite = () => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="enableAlerts"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                <div className="space-y-0.5">
-                  <FormLabel>Enable Alerts</FormLabel>
-                  <FormDescription>
-                    You get email notification when the website is down.
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+         
           <Button
             className="bg-blue-600 w-full disabled:cursor-not-allowed hover:bg-blue-700 text-white"
             type="submit"

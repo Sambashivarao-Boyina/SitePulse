@@ -22,6 +22,10 @@ const statusSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  errorMessage: {
+    type: String,
+    default: null,
+  }
 });
 statusSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 });
 

@@ -18,12 +18,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Nextjs from "/nextjs.png";
-import Html from "/public/html.png";
-import React from "/public/react.png";
-import Vuejs from "/public/vuejs.png";
-import Angular from "/public/angular.png";
-import WordPress from "/public/wordpress.png";
+import Nextjs from "../../assets/nextjs.png";
+import Html from "../../assets/html.png";
+import React from "../../assets/react.png";
+import Vuejs from "../../assets/vuejs.png";
+import Angular from "../../assets/angular.png";
+import WordPress from "../../assets/wordpress.png";
 import {
   Card,
   CardContent,

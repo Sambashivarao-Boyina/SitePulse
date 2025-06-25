@@ -5,7 +5,6 @@ export type Website = {
   name: string;
   url: string;
   logo: string;
-  enableAlerts: boolean;
   user: string;
   status: "Enable" | "Disable";
   lastWebsiteStatus: Status | null

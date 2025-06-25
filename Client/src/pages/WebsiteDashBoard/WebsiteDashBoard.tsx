@@ -15,6 +15,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import WebsiteDashBoardSidebar from "./WebsiteDashBoardSidebar";
 import WebsiteHeatMap from "./WebsiteHeatMap";
 import WebsiteLiveStatsBadge from "./WebsiteLiveStatsBadge";
+import WebsiteDelete from "./WebsiteDelete";
 
 const WebsiteDashBoard = () => {
   const { id } = useParams();
@@ -102,7 +103,7 @@ const WebsiteDashBoard = () => {
               />
               <Route
                 path="delete"
-                element={<p>Delete functionality coming soon...</p>}
+                element={<WebsiteDelete website={websiteDetails}/>}
               />
             </Routes>
           </div>

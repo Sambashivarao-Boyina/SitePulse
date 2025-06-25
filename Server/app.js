@@ -36,15 +36,24 @@ async function main() {
   await mongoose.connect(process.env.MONGO_DB_URL);
 }
 
-corn.schedule("*/5 * * * *", async () => {
-  const websites = await Website.find();
+corn.schedule("*/1 * * * *", async () => {
+  const websites = await Website.find().populate("user");
 
   websites.forEach(async (site) => {
     if (site.status === "Enable") {
       const websiteStatus = await checkWebsiteStatus(site.url);
-      console.log(websiteStatus);
       if (websiteStatus.status === "down") {
-        await sendEmails(["boyinasambashivarao@gmail.com"], site, websiteStatus);
+        await sendEmails([...site.alertEmails, site.user.email], site, websiteStatus);
+        if (site.alerts < 2) {
+          await Website.findByIdAndUpdate(site._id, {
+            alerts: site.alerts + 1,
+          });
+        } else {
+          await Website.findByIdAndUpdate(site._id, {
+            alerts: site.alerts + 1,
+            status: "Disable",
+          });
+        }
       }
 
       const status = new Status({
@@ -52,13 +61,22 @@ corn.schedule("*/5 * * * *", async () => {
         websiteStatus: websiteStatus.status,
         responseTime: websiteStatus.responseTime,
         statusCode: websiteStatus.statusCode,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        errorMessage: websiteStatus?.response,
       });
 
+
       const savedSatatus = await status.save();
-      await Website.findByIdAndUpdate(site._id, {
-        lastWebsiteStatus: savedSatatus._id,
-      });
+      if (savedSatatus.websiteStatus === "down") {
+        await Website.findByIdAndUpdate(site._id, {
+          lastWebsiteStatus: savedSatatus._id,
+        });
+      } else {
+        await Website.findByIdAndUpdate(site._id, {
+          lastWebsiteStatus: savedSatatus._id,
+          alerts: 0
+        });
+      }
     }
   });
 });
