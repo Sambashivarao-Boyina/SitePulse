@@ -59,6 +59,8 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "sonner";
+import { getSocket } from "@/hooks/socket";
+import { Skeleton } from "@/components/ui/skeleton";
 // Helper functions to replace date-fns
 const formatDate = (date: Date, formatStr: string) => {
   const options: Intl.DateTimeFormatOptions = {};
@@ -87,9 +89,11 @@ const isWithinInterval = (date: Date, interval: { start: Date; end: Date }) => {
 };
 
 const WebsiteVisits = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [visits, setVisits] = useState<Visit[]>([]);
   const { id } = useParams();
   const { getToken } = useAuth();
+  
   const [dateRange, setDateRange] = useState<{
     from?: Date;
     to?: Date;
@@ -100,6 +104,7 @@ const WebsiteVisits = () => {
   const [timeRange, setTimeRange] = useState("7d");
 
   const handleGetVisitsOfData = async () => {
+    setIsLoading(true);
     try {
       const token = await getToken();
       const response = await axios.get(`/api/visit/${id}`, {
@@ -114,10 +119,47 @@ const WebsiteVisits = () => {
         error?.response?.data?.message || "Cannot able to load Data";
       toast.error(message);
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
     handleGetVisitsOfData();
+  }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket) {
+      socket.on("visitAdded", (data) => {
+        setVisits((prev) => [...prev, data]);
+
+        const visitDate = parseISO(data.visitedTime);
+        setDateRange((prevRange) => {
+          const from = prevRange.from ?? visitDate;
+          const to = prevRange.to ?? visitDate;
+          return {
+            from: visitDate < from ? visitDate : from,
+            to: visitDate > to ? visitDate : to,
+          };
+        });
+      });
+
+      socket.on("visitUpdated", (data) => {
+        console.log("visitUpdated");
+        console.log(data);
+        setVisits((prev) => prev.map((visit) => {
+          if (visit._id === data._id) {
+            return data;
+          } else {
+            return visit;
+          }
+        }))
+      })
+    }
+
+    return () => {
+      socket?.off("visitAdded");
+      socket?.off("visitUpdated");
+    };
   }, []);
 
   // Filter visits based on date range
@@ -284,6 +326,34 @@ const WebsiteVisits = () => {
   const routesBarChatConfig = {
     count: { label: "Visits", color: "#3b82f6" },
   };
+
+
+  if (isLoading) {
+    return (
+      <div className="w-full md:max-w-7xl mx-auto md:p-6 space-y-6">
+        <Skeleton className="w-3/5 h-6" />
+        <Skeleton className="w-4/6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton className="w-full h-20" />
+          ))}
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
+          {/* Visits Over Time */}
+          <Skeleton className="col-span-1 lg:col-span-2 w-full h-60" />
+
+          <Skeleton className="w-full h-32" />
+          <Skeleton className="w-full h-32" />
+
+          {/* Popular Routes */}
+          <Skeleton className="col-span-1 lg:col-span-2 w-full h-60" />
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="w-full md:max-w-7xl mx-auto md:p-6 space-y-6">

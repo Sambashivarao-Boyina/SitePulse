@@ -25,13 +25,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { getSocket } from "@/hooks/socket";
 
 const WebsitesList = () => {
   const { getToken } = useAuth();
   const [websites, setWebsites] = useState<Website[]>([]);
-  const [filteredWebsites, setFilteredWebsites] = useState<Website[]>(
-    []
-  );
+  const [filteredWebsites, setFilteredWebsites] = useState<Website[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -66,6 +65,28 @@ const WebsitesList = () => {
     const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
     window.open(formattedUrl, "_blank");
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket) {
+      socket.on("websiteUpdate", (data) => {
+        if (data && data._id) {
+          setWebsites((prev) =>
+            prev.map((website) => {
+              if (website._id === data._id) {
+                return data;
+              } else {
+                return website;
+              }
+            })
+          );
+        }
+      });
+    }
+    return () => {
+      socket?.off("websiteUpdate");
+    };
+  }, []);
 
   // Filter websites based on search and status
   useEffect(() => {

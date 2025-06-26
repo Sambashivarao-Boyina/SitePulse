@@ -25,6 +25,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { getSocket } from "@/hooks/socket";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type DateTimeRange = {
   start: string;
@@ -61,6 +63,7 @@ const HeatmapLayer = ({ points }: { points: number[][] }) => {
 const WebsiteHeatMap = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [visits, setVisits] = useState<Visit[]>([]);
 
   const [dateTimeRange, setDateTimeRange] = useState<DateTimeRange>({
@@ -70,7 +73,20 @@ const WebsiteHeatMap = () => {
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
+  useEffect(() => {
+      const socket = getSocket();
+      if (socket) {
+        socket.on("visitAdded", (data) => {
+          setVisits((prev) => [...prev, data]);
+        });
+      }
+      return () => {
+        socket?.off("visitAdded");
+      };
+    }, []);
+
   const handleGetVisitsOfData = async () => {
+    setIsLoading(true);
     try {
       const token = await getToken();
       const response = await axios.get(`/api/visit/${id}`, {
@@ -85,6 +101,7 @@ const WebsiteHeatMap = () => {
         error?.response?.data?.message || "Cannot able to load Data";
       toast.error(message);
     }
+    setIsLoading(false);
   };
 
   const clearFilters = () => {
@@ -122,6 +139,17 @@ const WebsiteHeatMap = () => {
         visit.location.coordinates[1],
       ]);
   }, [filteredVists, dateTimeRange]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full ">
+        <Skeleton className="w-full h-32" />
+
+        <Skeleton className="w-3/5 h-6 mt-3" />
+        <Skeleton className="w-full h-80 mt-6" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full">

@@ -22,6 +22,8 @@ import {
   X,
   Loader,
   Trash,
+  AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -78,6 +80,8 @@ import {
 } from "@/components/ui/chart";
 
 import type { ChartConfig } from "@/components/ui/chart";
+import { getSocket } from "@/hooks/socket";
+import { Skeleton } from "@/components/ui/skeleton";
 interface DateTimeRange {
   start: string;
   end: string;
@@ -118,6 +122,18 @@ const WebsiteLogs = () => {
     }
   );
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket) {
+      socket.on("newStatus", (data) => {
+        setLogs((prev) => [...prev, data]);
+      });
+    }
+    return () => {
+      socket?.off("newStatus");
+    };
+  }, []);
 
   function formatDateTime(isoString: string): string {
     const date = new Date(isoString);
@@ -311,6 +327,33 @@ const WebsiteLogs = () => {
         </div>
       ),
     },
+    {
+      accessorKey: "errorMessage",
+      header: "Error",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.getValue("errorMessage") ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <AlertTriangle  className="text-red-600 cursor-pointer" />
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <div className="border border-red-200 dark:border-red-800 bg-red-50 mt-4 dark:bg-red-950 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-red-800 dark:text-red-200 text-sm">
+                      <strong>Error:</strong> {row.getValue("errorMessage")}
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            ""
+          )}
+        </div>
+      ),
+    },
   ];
 
   const table = useReactTable({
@@ -378,8 +421,28 @@ const WebsiteLogs = () => {
     },
   } satisfies ChartConfig;
 
+  if (isLoadingLogs) {
+    return (
+      <div className="h-full w-full flex justify-center p-2">
+        <div className="w-full md:max-w-6xl mx-auto mb-10 space-y-4 flex flex-col gap-5">
+          <Skeleton className="w-full h-20 " />
+
+          <Skeleton className="w-full h-5 " />
+
+          <div className="w-full flex flex-col gap-2">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton key={index} className="w-full h-6" />
+            ))}
+          </div>
+
+          <Skeleton className="w-full h-60" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`h-full w-full flex justify-center p-2`}>
+    <div className="h-full w-full flex justify-center p-2">
       <div className="w-full md:max-w-6xl mx-auto mb-10 space-y-4">
         {/* Filters Section */}
         <Card>
@@ -709,7 +772,6 @@ const WebsiteLogs = () => {
           </div>
         </div>
 
-        
         <Card>
           <CardHeader>
             <CardTitle>Response Time</CardTitle>

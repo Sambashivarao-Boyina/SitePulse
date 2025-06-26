@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/code-block";
 import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getSocket } from "../../hooks/socket";
 
 const WebsiteDetails = () => {
   const { id } = useParams();
@@ -82,6 +83,18 @@ const WebsiteDetails = () => {
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket) {
+      socket.on("websiteUpdate", (data) => {
+        setWebsiteDetails(data);
+      })
+    }
+    return () => {
+      socket?.off("websiteUpdate");
+    };
+  },[])
 
   const [editedName, setEditedName] = useState("");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
@@ -475,7 +488,21 @@ const WebsiteDetails = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
-        <Skeleton className="w-full h-full m-2" />
+        <div className="w-full h-full mt-10 md:max-w-4xl mx-auto mb-10 flex flex-col items-center gap-3">
+          <Skeleton className="w-40 h-40 rounded-full" />
+
+          <div className="flex flex-row flex-wrap w-full gap-3 items-center justify-center">
+            {Array.from({ length: 3 }).map((_, index) => {
+              return <Skeleton key={index} className="h-20 w-40 rounded-md" />;
+            })}
+          </div>
+
+          <Skeleton className="w-full h-4 mt-4" />
+
+          <Skeleton className="w-full my-10 h-20" />
+
+          <Skeleton className="w-full mb-10 h-10" />
+        </div>
       </div>
     );
   }

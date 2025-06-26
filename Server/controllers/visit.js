@@ -45,6 +45,14 @@ module.exports.visitWebsite = async (req, res) => {
 
   const saved = await newVisit.save();
 
+  const io = req.io;
+  const socketStore = req.socketStore;
+
+  const socket = socketStore.getSocketOfUser(website.user.toString());
+  if (socket) {
+    io.to(socket).emit("visitAdded", saved);
+  }
+
   res.status(202).json({ message: "Visit saved", id: saved._id });
 };
 
@@ -57,6 +65,17 @@ module.exports.closeTheVisitedWebsite = async (req, res) => {
   visit.closedTime = Date.now();
 
   await visit.save();
+
+  const updatedVisit = await Visit.findById(req.params.visitId); 
+
+  const io = req.io;
+  const socketStore = req.socketStore;
+
+  const socket = socketStore.getSocketOfUser(website.user.toString());
+  if (socket) {
+    io.to(socket).emit("visitUpdated", updatedVisit);
+  }
+
   res.status(200).json({ message: "website visit closed" });
 };
 
@@ -74,7 +93,15 @@ module.exports.addRoutesToVisit = async (req, res) => {
 
   await visit.save();
 
-  await Visit.findById(req.params.visitId);
+  const updatedVisit = await Visit.findById(req.params.visitId);
+
+  const io = req.io;
+  const socketStore = req.socketStore;
+
+  const socket = socketStore.getSocketOfUser(website.user.toString());
+  if (socket) {
+    io.to(socket).emit("visitUpdated", updatedVisit);
+  }
 
   res.status(200).json({ message: "saved" });
 };

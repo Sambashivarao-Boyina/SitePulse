@@ -85,7 +85,9 @@ const WebsiteCard: React.FC<WebsiteCardProps> = ({ website, onVisit }) => {
                 {website.lastWebsiteStatus != null && (
                   <Badge
                     className={`uppercase ${
-                      isActive ? "bg-green-500" : "bg-red-500"
+                      website.lastWebsiteStatus?.websiteStatus == "up"
+                        ? "bg-green-500"
+                        : "bg-red-500"
                     } text-white`}
                   >
                     {website.lastWebsiteStatus?.websiteStatus}

@@ -16,6 +16,7 @@ import WebsiteDashBoardSidebar from "./WebsiteDashBoardSidebar";
 import WebsiteHeatMap from "./WebsiteHeatMap";
 import WebsiteLiveStatsBadge from "./WebsiteLiveStatsBadge";
 import WebsiteDelete from "./WebsiteDelete";
+import { getSocket } from "@/hooks/socket";
 
 const WebsiteDashBoard = () => {
   const { id } = useParams();
@@ -27,8 +28,12 @@ const WebsiteDashBoard = () => {
     { title: "Details", href: `/websites/${id}/details`, icon: Home },
     { title: "Logs", href: `/websites/${id}/logs`, icon: Logs },
     { title: "Visitors", href: `/websites/${id}/visitors`, icon: Users },
-    { title: "HeatMap", href: `/websites/${id}/heatmap`, icon: Map},
-    { title: "Live Stats Badge", href: `/websites/${id}/badge`, icon: ChartBar },
+    { title: "HeatMap", href: `/websites/${id}/heatmap`, icon: Map },
+    {
+      title: "Live Stats Badge",
+      href: `/websites/${id}/badge`,
+      icon: ChartBar,
+    },
     { title: "Delete", href: `/websites/${id}/delete`, icon: Trash2 },
   ];
 
@@ -55,6 +60,18 @@ const WebsiteDashBoard = () => {
   useEffect(() => {
     getDataOfWebsite();
   }, [id]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (socket) {
+      socket.on("websiteUpdate", (data) => {
+        setWebsiteDetails(data);
+      });
+    }
+    return () => {
+      socket?.off("websiteUpdate");
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -97,13 +114,10 @@ const WebsiteDashBoard = () => {
               <Route path="logs" element={<WebsiteLogs />} />
               <Route path="visitors" element={<WebsiteVisits />} />
               <Route path="heatmap" element={<WebsiteHeatMap />} />
-              <Route
-                path="badge"
-                element={<WebsiteLiveStatsBadge/>}
-              />
+              <Route path="badge" element={<WebsiteLiveStatsBadge />} />
               <Route
                 path="delete"
-                element={<WebsiteDelete website={websiteDetails}/>}
+                element={<WebsiteDelete website={websiteDetails} />}
               />
             </Routes>
           </div>

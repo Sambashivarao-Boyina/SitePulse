@@ -145,7 +145,7 @@
         `;
 
       const brandLink = document.createElement("a");
-      brandLink.href = "https://siteplus.com"; // Replace with your actual domain
+      brandLink.href = "https://sitepulse.com"; // Replace with your actual domain
       brandLink.target = "_blank";
       brandLink.rel = "noopener noreferrer";
       brandLink.style.cssText = `
@@ -162,10 +162,7 @@
           border: 1px solid #e5e7eb;
         `;
       brandLink.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
-          </svg>
-          Powered by SitePlus
+          Powered by SitePulse
         `;
 
       brandLink.addEventListener("mouseenter", () => {

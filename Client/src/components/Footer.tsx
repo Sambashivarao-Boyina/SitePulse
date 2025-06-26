@@ -1,4 +1,3 @@
-import { Globe } from 'lucide-react'
 import logo from "../assets/sitepulse_logo.png";
 
 

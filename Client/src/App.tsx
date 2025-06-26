@@ -2,7 +2,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { RedirectToSignIn, useAuth } from "@clerk/clerk-react";
 import { useEffect, type ReactNode } from "react";
 import HomePage from "./pages/Home";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import AddSite from "./pages/AddSite";
@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import WebsitesList from "./pages/WebsiesList/WebstiesList";
 import WebsiteDashBoard from "./pages/WebsiteDashBoard/WebsiteDashBoard";
 import Docs from "./pages/Docs";
+import { initSocket, disconnectSocket } from "./hooks/socket";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -24,6 +25,22 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 function App() {
   const location = useLocation();
+
+  const { isSignedIn, userId } = useAuth();
+
+  useEffect(() => {
+    const setup = async () => {
+      if (isSignedIn) {
+        if (userId) {
+          initSocket(userId);
+        }
+      } else {
+        disconnectSocket();
+      }
+    };
+
+    setup();
+  }, [isSignedIn]);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -58,7 +75,7 @@ function App() {
               }
             />
 
-            <Route path="/docs" element={<Docs/>} /> 
+            <Route path="/docs" element={<Docs />} />
           </Routes>
         </div>
         {!location.pathname.includes("/websites/") && <Footer />}

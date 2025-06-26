@@ -3,8 +3,6 @@ const User = require("../modals/user");
 const Website = require("../modals/website");
 const ExpressError = require("../utils/ExpressError");
 const Status = require("../modals/status");
-const sendEmails = require("../utils/sendEmail");
-const { response } = require("express");
 
 module.exports.checkWebsiteStatus = async(url) => {
     try {
