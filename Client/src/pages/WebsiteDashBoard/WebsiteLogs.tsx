@@ -156,8 +156,7 @@ const WebsiteLogs = () => {
   const handleDeleteSelectedLogs = async () => {
     setIsDetelingLogs(true);
     try {
-      console.log("selectedRows");
-      console.log(table.getSelectedRowModel().rows.map((row) => row.id));
+     
       const token = await getToken();
       const response = await axios.delete(`/api/status/${id}`, {
         data: {

@@ -144,8 +144,7 @@ const WebsiteVisits = () => {
       });
 
       socket.on("visitUpdated", (data) => {
-        console.log("visitUpdated");
-        console.log(data);
+       
         setVisits((prev) =>
           prev.map((visit) => {
             if (visit._id === data._id) {
@@ -202,30 +201,32 @@ const WebsiteVisits = () => {
     setDateRange({ from, to: now });
   }, [timeRange]);
 
+  const [activeUsers, setActiveUsers] = useState<number>(0);
+
+  useEffect(() => {
+    function updateActiveUsers() {
+      const now = new Date();
+      const count = filteredVisits.filter((v) => {
+        const closeTime = new Date(v.closedTime);
+        const diffMs = now.getTime() - closeTime.getTime(); // explicit getTime for clarity
+        return diffMs <= 60 * 1000; // within 1 minute
+      }).length;
+
+      setActiveUsers(count);
+     
+    }
+
+    updateActiveUsers(); // Initial run
+
+    const interval = setInterval(updateActiveUsers, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [filteredVisits]);
+
   // Calculate stats
   const stats = useMemo(() => {
     const totalVisits = filteredVisits.length;
-    const [activeUsers, setActiveUsers] = useState<number>(0);
 
-    useEffect(() => {
-      function updateActiveUsers() {
-        const now = new Date();
-        const count = filteredVisits.filter((v) => {
-          const closeTime = new Date(v.closedTime);
-          const diffMs = now.getTime() - closeTime.getTime(); // explicit getTime for clarity
-          return diffMs <= 60 * 1000; // within 1 minute
-        }).length;
-
-        setActiveUsers(count);
-        console.log("Active users updated:", count);
-      }
-
-      updateActiveUsers(); // Initial run
-
-      const interval = setInterval(updateActiveUsers, 60 * 1000);
-
-      return () => clearInterval(interval);
-    }, [filteredVisits]);
     const bounceRate =
       (filteredVisits.filter((v) => v.routes.length === 1).length /
         totalVisits) *
@@ -327,9 +328,7 @@ const WebsiteVisits = () => {
       .slice(0, 10);
   }, [filteredVisits]);
 
-  useEffect(() => {
-    console.log("Route", routesData);
-  }, [routesData]);
+
 
   const chartConfig = {
     visits: { label: "Visits", color: "#3b82f6" },
@@ -350,8 +349,8 @@ const WebsiteVisits = () => {
         <Skeleton className="w-3/5 h-6" />
         <Skeleton className="w-4/6 h-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_) => (
-            <Skeleton className="w-full h-20" />
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="w-full h-20" />
           ))}
         </div>
 

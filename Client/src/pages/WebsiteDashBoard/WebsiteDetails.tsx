@@ -329,7 +329,7 @@ const WebsiteDetails = () => {
     try {
       const token = await getToken();
       const updatedEmails = [...alertEmails, newEmail.trim()];
-      console.log("sending request");
+     
       await axios.patch(
         `/api/website/${id}/alertEmails`,
         {

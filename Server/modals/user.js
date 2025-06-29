@@ -34,7 +34,6 @@ userSchema.pre("findOneAndDelete", async function (next) {
   const docToDelete = await this.model.findOne(this.getFilter());
 
   if (docToDelete) {
-    console.log("About to delete website:", docToDelete._id);
     await Website.deleteMany({ user: docToDelete._id });
     await mongoose
       .model("Status")

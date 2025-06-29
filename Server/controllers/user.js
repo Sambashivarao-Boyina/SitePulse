@@ -32,7 +32,7 @@ module.exports.userWebhook = async (req, res) => {
       return res.status(200).send("User updated");
     } else if (type === "user.deleted") {
       const user_id = req.body.data.id;
-      await User.deleteOne({ clerk_id: user_id });
+      await User.findOneAndDelete({ clerk_id: user_id });
       return res.status(200).send("User deleted");
     } else {
       console.warn("⚠️ Unhandled event type:", type);
