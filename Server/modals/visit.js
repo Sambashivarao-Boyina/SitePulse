@@ -12,6 +12,7 @@ const visitSchema = new Schema({
   },
   closedTime: {
     type: Date,
+    default: Date.now,
   },
   deviceType: {
     type: String,

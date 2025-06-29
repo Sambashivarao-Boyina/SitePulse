@@ -26,6 +26,11 @@ module.exports.getAllWebsiteOfUser = async (req, res) => {
   const { userId } = req.auth();
 
   const user = await User.findOne({ clerk_id: userId });
+
+  if (!user) {
+    throw new ExpressError(401, "You are not authorized");
+  }
+
   const webistes = await Website.find({ user: user._id }).populate(
     "lastWebsiteStatus"
   );

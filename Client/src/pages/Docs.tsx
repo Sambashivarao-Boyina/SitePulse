@@ -28,7 +28,6 @@ import {
   MousePointer,
   TrendingUp,
   ChevronRight,
-  BadgeAlert,
   Users,
 } from "lucide-react";
 

@@ -22,7 +22,6 @@ import {
   X,
   Loader,
   Trash,
-  AlertCircle,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

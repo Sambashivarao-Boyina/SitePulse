@@ -94,13 +94,15 @@ const WebsiteVisits = () => {
   const { id } = useParams();
   const { getToken } = useAuth();
   
+
   const [dateRange, setDateRange] = useState<{
-    from?: Date;
-    to?: Date;
+    from: Date | undefined;
+    to: Date | undefined;
   }>({
     from: subDays(new Date(), 7),
     to: new Date(),
   });
+  
   const [timeRange, setTimeRange] = useState("7d");
 
   const handleGetVisitsOfData = async () => {
@@ -323,9 +325,7 @@ const WebsiteVisits = () => {
     count: { label: "Count", color: "#3b82f6" }, // used as value
   };
 
-  const routesBarChatConfig = {
-    count: { label: "Visits", color: "#3b82f6" },
-  };
+
 
 
   if (isLoading) {
@@ -334,7 +334,7 @@ const WebsiteVisits = () => {
         <Skeleton className="w-3/5 h-6" />
         <Skeleton className="w-4/6 h-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_) => (
             <Skeleton className="w-full h-20" />
           ))}
         </div>
