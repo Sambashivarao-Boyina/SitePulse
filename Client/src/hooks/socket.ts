@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 
 export const initSocket = (userId: string): Socket => {
   if (!socket) {
-    socket = io("http://localhost:8080", {
+    socket = io("https://sitepulse-bc6z.onrender.com/", {
       auth: { userId },
     });
 
