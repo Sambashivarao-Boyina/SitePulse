@@ -44,7 +44,7 @@ main()
   .catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect(process.env.MONGO_DB_URL);
+  await mongoose.connect(process.env.MONGO_ATLAS_URL);
 }
 
 

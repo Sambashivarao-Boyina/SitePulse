@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -93,7 +92,6 @@ const WebsiteVisits = () => {
   const [visits, setVisits] = useState<Visit[]>([]);
   const { id } = useParams();
   const { getToken } = useAuth();
-  
 
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
@@ -102,7 +100,7 @@ const WebsiteVisits = () => {
     from: subDays(new Date(), 7),
     to: new Date(),
   });
-  
+
   const [timeRange, setTimeRange] = useState("7d");
 
   const handleGetVisitsOfData = async () => {
@@ -148,14 +146,16 @@ const WebsiteVisits = () => {
       socket.on("visitUpdated", (data) => {
         console.log("visitUpdated");
         console.log(data);
-        setVisits((prev) => prev.map((visit) => {
-          if (visit._id === data._id) {
-            return data;
-          } else {
-            return visit;
-          }
-        }))
-      })
+        setVisits((prev) =>
+          prev.map((visit) => {
+            if (visit._id === data._id) {
+              return data;
+            } else {
+              return visit;
+            }
+          })
+        );
+      });
     }
 
     return () => {
@@ -205,7 +205,27 @@ const WebsiteVisits = () => {
   // Calculate stats
   const stats = useMemo(() => {
     const totalVisits = filteredVisits.length;
-    const activeUsers = filteredVisits.filter((v) => v.isActive).length;
+    const [activeUsers, setActiveUsers] = useState<number>(0);
+
+    useEffect(() => {
+      function updateActiveUsers() {
+        const now = new Date();
+        const count = filteredVisits.filter((v) => {
+          const closeTime = new Date(v.closedTime);
+          const diffMs = now.getTime() - closeTime.getTime(); // explicit getTime for clarity
+          return diffMs <= 60 * 1000; // within 1 minute
+        }).length;
+
+        setActiveUsers(count);
+        console.log("Active users updated:", count);
+      }
+
+      updateActiveUsers(); // Initial run
+
+      const interval = setInterval(updateActiveUsers, 60 * 1000);
+
+      return () => clearInterval(interval);
+    }, [filteredVisits]);
     const bounceRate =
       (filteredVisits.filter((v) => v.routes.length === 1).length /
         totalVisits) *
@@ -307,10 +327,9 @@ const WebsiteVisits = () => {
       .slice(0, 10);
   }, [filteredVisits]);
 
-
   useEffect(() => {
     console.log("Route", routesData);
-  },[routesData])
+  }, [routesData]);
 
   const chartConfig = {
     visits: { label: "Visits", color: "#3b82f6" },
@@ -324,9 +343,6 @@ const WebsiteVisits = () => {
     device: { label: "Device Type", color: "#8884d8" }, // used for tooltip/legend
     count: { label: "Count", color: "#3b82f6" }, // used as value
   };
-
-
-
 
   if (isLoading) {
     return (
@@ -354,7 +370,6 @@ const WebsiteVisits = () => {
     );
   }
 
-
   return (
     <div className="w-full md:max-w-7xl mx-auto md:p-6 space-y-6">
       {/* Header */}
@@ -367,7 +382,8 @@ const WebsiteVisits = () => {
             Track your website visits and user behavior
           </p>
           <p className="text-muted-foreground">
-            Your website visits data will be deleted automatically after 3 months of it created.
+            Your website visits data will be deleted automatically after 3
+            months of it created.
           </p>
         </div>
 
@@ -656,5 +672,3 @@ const WebsiteVisits = () => {
 };
 
 export default WebsiteVisits;
-
-
