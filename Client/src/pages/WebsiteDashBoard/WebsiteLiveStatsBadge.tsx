@@ -293,7 +293,7 @@ add_shortcode('livestats_badge', 'livestats_badge_shortcode');
   useEffect(() => {
     const script = document.createElement("script");
     script.src =
-      "https://sitepulse-bc6z.onrender.com/api/cdn/metrics/684c02732bd394dc6579cafa";
+      `https://sitepulse-bc6z.onrender.com/api/cdn/metrics/${id}`;
     script.setAttribute("data-website-id", "abc123");
     script.async = true;
 
