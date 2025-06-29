@@ -1,6 +1,6 @@
 const websiteId = "__WEBSITE_ID__";
-const visitUrl = `http://localhost:8080/api/visit/${websiteId}`;
-const closeBaseUrl = `http://localhost:8080/api/visit/${websiteId}/close`;
+const visitUrl = `https://sitepulse-bc6z.onrender.com/api/visit/${websiteId}`;
+const closeBaseUrl = `https://sitepulse-bc6z.onrender.com/api/visit/${websiteId}/close`;
 const VISIT_ID_STORAGE_KEY = "website_visit_id";
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 

@@ -2,7 +2,9 @@
   const scriptTag = document.currentScript;
   const websiteId = "__WEBSITE_ID__";
 
-  fetch(`http://localhost:8080/api/visit/extrnalsnippet/${websiteId}`)
+  fetch(
+    `https://sitepulse-bc6z.onrender.com/api/visit/extrnalsnippet/${websiteId}`
+  )
     .then((res) => res.json())
     .then((data) => {
       // Create the main widget container
@@ -145,7 +147,7 @@
         `;
 
       const brandLink = document.createElement("a");
-      brandLink.href = "https://sitepulse.com"; // Replace with your actual domain
+      brandLink.href = "https://sitepulse-bc6z.onrender.com"; // Replace with your actual domain
       brandLink.target = "_blank";
       brandLink.rel = "noopener noreferrer";
       brandLink.style.cssText = `
