@@ -302,7 +302,7 @@ const AddSite = () => {
           </div>
 
           <DialogFooter>
-            <Button onClick={handleDialogClose} className="w-full bg-blue-600 text-white">
+            <Button onClick={handleDialogClose} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
               Done
             </Button>
           </DialogFooter>
