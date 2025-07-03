@@ -216,7 +216,9 @@ const WebsiteVisits = () => {
      
     }
 
-    updateActiveUsers(); // Initial run
+    if (filteredVisits.length > 0) {
+      updateActiveUsers();
+    }
 
     const interval = setInterval(updateActiveUsers, 60 * 1000);
 
