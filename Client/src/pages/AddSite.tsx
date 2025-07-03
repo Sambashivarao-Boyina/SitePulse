@@ -222,7 +222,7 @@ const AddSite = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-green-300/20 flex items-center justify-center">
                 <Check className="h-4 w-4 text-green-600" />
               </div>
               Website Added Successfully!
